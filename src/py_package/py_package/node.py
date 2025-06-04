@@ -10,6 +10,8 @@ def main(args=None):
     node = Node("py_test")
     node.get_logger().info("hello word!")
 
+    rclpy.spin(node)
+
     #shutdown at the end
     rclpy.shutdown()
 
