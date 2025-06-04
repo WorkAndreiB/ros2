@@ -3,12 +3,16 @@
 import rclpy
 from rclpy.node import Node
 
+class MyNode(Node):
+    def __init__(self):
+        super().__init__("py_test")
+        self.get_logger().info("Hello world! oop")
+
 def main(args=None):
     #first thing is to init
     rclpy.init(args=args)
 
-    node = Node("py_test")
-    node.get_logger().info("hello word!")
+    node = MyNode()
 
     rclpy.spin(node)
 
