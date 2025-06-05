@@ -2,7 +2,7 @@
 FROM ubuntu:24.04
 
 # Set working directory
-WORKDIR /ros2_work
+WORKDIR /ros2
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -30,7 +30,7 @@ RUN apt-get update && apt-get install -y ros-dev-tools
 
 # Install ROS2 
 RUN apt-get update && apt-get upgrade -y && \
-    apt-get install -y ros-jazzy-desktop
+    apt-get install -y ros-jazzy-ros-base
 
 # Source ROS2 workspace
 RUN echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
