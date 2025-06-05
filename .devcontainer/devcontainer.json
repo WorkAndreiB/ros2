@@ -1,14 +1,14 @@
 {
   "name": "ros2work",
   "dockerFile": "Dockerfile",
-  "workspaceFolder": "/workspaces/ros2_work",
+  "workspaceFolder": "/workspaces/ros2",
   "extensions": [
     "ms-python.python",
     "ms-azuretools.vscode-docker",
     "ms-iot.vscode-ros",
     "twxs.cmake"
   ],
-  "workspaceFolder": "/workspaces/ros2_work",
+  "workspaceFolder": "/workspaces/ros2",
   "settings": {
     "terminal.integrated.shell.linux": "/bin/bash"
   },
