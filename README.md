@@ -33,6 +33,25 @@ Ros2 learning project using C++ and Python
     ros2 node info /node
 ```
 
+- see topics
+```bash 
+    ros2 topic list
+```
+
+- listen on specific topic
+```bash 
+    ros2 topic echo /<topic>
+```
+
+- see active nodes
+```bash 
+    ros2 node list
+```
+
+- see info about specific node
+```bash 
+    ros2 node info <node>
+```
 
 # Remember:
 - source workspace after any changes:
