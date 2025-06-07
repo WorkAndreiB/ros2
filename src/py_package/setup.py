@@ -20,7 +20,9 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            "node = py_package.node:main"
+            "node = py_package.node:main",
+            "robot_news_station = py_package.robot_news_station:main",
+            "robot_news_station_listener = py_package.robot_news_station_listener:main"
         ],
     },
 )
