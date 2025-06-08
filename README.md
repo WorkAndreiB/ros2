@@ -2,7 +2,12 @@
 
 Ros2 learning project using C++ and Python 
 
+Using Ros2 Jazzy distro
+
+Install steps: https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html
+
 # Instructions
+# Build
 - build entire workspace
 ```bash 
     colcon build
@@ -13,6 +18,7 @@ Ros2 learning project using C++ and Python
     colcon build --packages-select <package_name>
 ```
 
+# Nodes
 - run node 
 ```bash 
     ros2 run <package_name> <node_name>
@@ -30,17 +36,7 @@ Ros2 learning project using C++ and Python
 
 - get more info about specific node
 ```bash 
-    ros2 node info /node
-```
-
-- see topics
-```bash 
-    ros2 topic list
-```
-
-- listen on specific topic
-```bash 
-    ros2 topic echo /<topic>
+    ros2 node info /<node>
 ```
 
 - see active nodes
@@ -53,8 +49,41 @@ Ros2 learning project using C++ and Python
     ros2 node info <node>
 ```
 
+# Topics
+- see topics
+```bash 
+    ros2 topic list
+```
+
+- see topics info: type, number of publisher, number of subscribers
+```bash 
+    ros2 topic info /<topic_name>
+```
+
+- listen on specific topic
+```bash 
+    ros2 topic echo /<topic>
+```
+
+- see the frequecy of topic messages
+```bash 
+    ros2 topic hz /<topic>
+```
+
+- publish message on specific topic
+```bash 
+    ros2 topic pub -r <number_of_msg_per_second> <topic> <type> "{<data_field>: <data>}"
+```
+Example: ros2 topic pub -r 5 robot_news example_interfaces/msg/String  "{data: 'Hello'}"
+
+# Interface
+- see interface implementation detail
+```bash 
+    ros2 interface show <interface>
+```
+
 # Remember:
 - source workspace after any changes:
-    ```bash
+```bash
     source install/setup.bash
-    ```
+```

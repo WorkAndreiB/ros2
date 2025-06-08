@@ -22,7 +22,9 @@ setup(
         'console_scripts': [
             "node = py_package.node:main",
             "robot_news_station = py_package.robot_news_station:main",
-            "robot_news_station_listener = py_package.robot_news_station_listener:main"
+            "robot_news_station_listener = py_package.robot_news_station_listener:main",
+            "number_publisher = py_package.number_publisher:main",
+            "number_counter = py_package.number_counter:main"
         ],
     },
 )
