@@ -30,7 +30,7 @@ RUN apt-get update && apt-get install -y ros-dev-tools
 
 # Install ROS2 
 RUN apt-get update && apt-get upgrade -y && \
-    apt-get install -y ros-jazzy-ros-base
+    apt-get install -y ros-jazzy-desktop
 
 # Source ROS2 workspace
 RUN echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
