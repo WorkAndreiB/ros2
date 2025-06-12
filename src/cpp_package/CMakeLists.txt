@@ -20,6 +20,10 @@ ament_target_dependencies(robot_news_station rclcpp example_interfaces)
 add_executable(robot_news_station_listener src/robot_news_station_listener.cpp)
 ament_target_dependencies(robot_news_station_listener rclcpp example_interfaces)
 
+add_executable(number_counter src/number_counter.cpp)
+ament_target_dependencies(number_counter rclcpp example_interfaces)
+
+
 # Add include dir
 target_include_directories(robot_news_station PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -27,6 +31,11 @@ target_include_directories(robot_news_station PUBLIC
 )
 
 target_include_directories(robot_news_station_listener PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
+target_include_directories(number_counter PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
@@ -41,6 +50,7 @@ install(TARGETS
   cpp_node
   robot_news_station
   robot_news_station_listener
+  number_counter
   DESTINATION lib/${PROJECT_NAME}
 )
 
