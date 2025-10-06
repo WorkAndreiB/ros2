@@ -53,3 +53,5 @@ ENV PYTHONUNBUFFERED=1
 
 # Default command
 CMD ["bash"]
+
+WORKDIR /workspace

@@ -1,19 +1,22 @@
 {
   "name": "ros2work",
   "dockerFile": "Dockerfile",
-  "workspaceFolder": "/workspaces/ros2",
-  "extensions": [
-    "ms-python.python",
-    "ms-azuretools.vscode-docker",
-    "ms-iot.vscode-ros",
-    "twxs.cmake"
-  ],
-  "workspaceFolder": "/workspaces/ros2",
-  "settings": {
-    "terminal.integrated.shell.linux": "/bin/bash"
+  "customizations": {
+    "vscode": {
+      "settings":{
+        "terminal.integrated.shell.linux": "/bin/bash"
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-azuretools.vscode-docker",
+        "ms-iot.vscode-ros",
+        "twxs.cmake"
+      ]
+    }
   },
+  "workspaceFolder": "/workspaces/ros2",
   "mounts": [
-    "source=${env:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached"
+   "source=${env:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached"
   ],
   "postCreateCommand": "git config --global user.email 'andrei.baciu94@gmail.com' && git config --global user.name 'Andrei B'"
 
