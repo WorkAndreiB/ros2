@@ -32,6 +32,12 @@ RUN apt-get update && apt-get install -y ros-dev-tools
 RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y ros-jazzy-desktop
 
+# Install robotics dependecies
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
+    ros-jazzy-urdf-tutorial \
+    #tf tree
+    ros-jazzy-tf2-tools 
+
 # Source ROS2 workspace
 RUN echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
 
