@@ -11,6 +11,10 @@ def generate_launch_description():
     # get path to robot description urdf file from share folder (where it was installed in CMake)
     urdf_path = os.path.join(get_package_share_path('first_robot_description'), 'urdf', 'my_robot.urdf')
     
+
+    #get path to rviz configuration
+    rviz_path = os.path.join(get_package_share_path('first_robot_description'), 'rviz', 'urdf_config.rviz')
+    
     # create parameter for robot_state_publisher node
     robot_description = ParameterValue(Command(['xacro ', urdf_path]), value_type=str)
 
@@ -28,7 +32,8 @@ def generate_launch_description():
 
     rviz_node = Node(
         package="rviz2",
-        executable="rviz2"
+        executable="rviz2",
+        arguments=['-d', rviz_path]
     )
 
     return LaunchDescription([
