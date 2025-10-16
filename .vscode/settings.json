@@ -1,4 +1,10 @@
 {
+    "files.exclude": {
+        "**/.git": true,
+        "**/build": true,
+        "**/install": true,
+        "**/log": true,
+    },
     "python.autoComplete.extraPaths": [
         "/opt/ros/jazzy/lib/python3.12/site-packages"
     ],
