@@ -37,7 +37,8 @@ RUN apt-get update && apt-get upgrade -y && \
 RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     ros-jazzy-urdf-tutorial \
     #tf tree
-    ros-jazzy-tf2-tools 
+    ros-jazzy-tf2-tools \
+    ros-jazzy-xacro
 
 # Source ROS2 workspace
 RUN echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
