@@ -15,7 +15,8 @@ RUN apt-get update && apt-get install -y \
     python3-venv \
     libpq-dev \
     python3-pip \
-    git \
+    git \ 
+    terminator \
     && apt-get clean
 
 # Install ROS2 dependencies
