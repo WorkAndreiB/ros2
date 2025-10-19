@@ -20,6 +20,9 @@
                 <origin xyz="0 0 0" rpy="${pi/2.0} 0 0"></origin>
                 <material name="blue"></material>
             </visual>
+            <xacro:cilinder_inertia mass="1.0" radius="${radius}" height="${length}"
+                                    origin_xyz="0 0 0" origin_rpy="0 0 0">
+            </xacro:cilinder_inertia>
         </link>
     </xacro:macro>
 
@@ -37,18 +40,24 @@
             <origin xyz="0 0 ${base_height/2.0}" rpy="0 0 0"></origin>
             <material name="green"></material>
         </visual>
+        <xacro:box_inertia mass="5.0" x="${base_length}" y="${base_width}" z="${base_height}" 
+                        origin_xyz="0 0 ${base_height/2.0}" origin_rpy="0 0 0">
+        </xacro:box_inertia>
     </link>
 
     <xacro:create_wheel prefix="right" radius="${wheel_radius}" length="${wheel_length}"></xacro:create_wheel>
     <xacro:create_wheel prefix="left" radius="${wheel_radius}" length="${wheel_length}"></xacro:create_wheel>
 
-        <link name="caster_wheel_link">
+    <link name="caster_wheel_link">
         <visual>
             <geometry>
                 <sphere radius="${wheel_radius/2.0}"></sphere>
             </geometry>
             <origin xyz="0 0 0" rpy="0 0 0"></origin>
         </visual>
+        <xacro:sphere_inertia mass="0.5" radius="${wheel_radius/2.0}" 
+                            origin_xyz="0 0 0" origin_rpy="0 0 0">
+        </xacro:sphere_inertia>
     </link>
     
     <!-- Joints -->
