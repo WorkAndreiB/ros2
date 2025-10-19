@@ -20,6 +20,14 @@
                 <origin xyz="0 0 0" rpy="${pi/2.0} 0 0"></origin>
                 <material name="blue"></material>
             </visual>
+            <collision>
+                <!-- hack: for wheels collision is better to use a sphere(instead of cylinder)-->
+                <!-- shpere has only one point of collision -->
+                <geometry>
+                    <sphere radius="${wheel_radius}"></sphere>
+                </geometry>
+                <origin xyz="0 0 0" rpy="0 0 0"></origin>
+            </collision>    
             <xacro:cilinder_inertia mass="1.0" radius="${radius}" height="${length}"
                                     origin_xyz="0 0 0" origin_rpy="0 0 0">
             </xacro:cilinder_inertia>
@@ -40,6 +48,12 @@
             <origin xyz="0 0 ${base_height/2.0}" rpy="0 0 0"></origin>
             <material name="green"></material>
         </visual>
+        <collision>
+            <geometry>
+                <box size="${base_length} ${base_width} ${base_height}"></box>
+            </geometry>
+            <origin xyz="0 0 ${base_height/2.0}" rpy="0 0 0"></origin>
+        </collision>
         <xacro:box_inertia mass="5.0" x="${base_length}" y="${base_width}" z="${base_height}" 
                         origin_xyz="0 0 ${base_height/2.0}" origin_rpy="0 0 0">
         </xacro:box_inertia>
@@ -55,6 +69,12 @@
             </geometry>
             <origin xyz="0 0 0" rpy="0 0 0"></origin>
         </visual>
+        <collision>
+            <geometry>
+                <sphere radius="${wheel_radius/2.0}"></sphere>
+            </geometry>
+            <origin xyz="0 0 0" rpy="0 0 0"></origin>
+        </collision>
         <xacro:sphere_inertia mass="0.5" radius="${wheel_radius/2.0}" 
                             origin_xyz="0 0 0" origin_rpy="0 0 0">
         </xacro:sphere_inertia>
