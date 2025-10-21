@@ -15,7 +15,8 @@ RUN apt-get update && apt-get install -y \
     python3-venv \
     libpq-dev \
     python3-pip \
-    git \
+    git \ 
+    terminator \
     && apt-get clean
 
 # Install ROS2 dependencies
@@ -36,7 +37,10 @@ RUN apt-get update && apt-get upgrade -y && \
 RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     ros-jazzy-urdf-tutorial \
     #tf tree
-    ros-jazzy-tf2-tools 
+    ros-jazzy-tf2-tools \
+    ros-jazzy-xacro \
+    #gazebo dependencies
+    ros-jazzy-ros-gz
 
 # Source ROS2 workspace
 RUN echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc

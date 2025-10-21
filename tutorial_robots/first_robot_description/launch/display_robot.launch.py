@@ -9,7 +9,7 @@ import os
 def generate_launch_description():
 
     # get path to robot description urdf file from share folder (where it was installed in CMake)
-    urdf_path = os.path.join(get_package_share_path('first_robot_description'), 'urdf', 'my_robot.urdf')
+    urdf_path = os.path.join(get_package_share_path('first_robot_description'), 'urdf', 'my_robot.urdf.xacro')
     
 
     #get path to rviz configuration
