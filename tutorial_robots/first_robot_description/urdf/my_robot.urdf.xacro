@@ -21,7 +21,7 @@
                 <material name="blue"></material>
             </visual>
             <collision>
-                <!-- hack: for wheels collision is better to use a sphere(instead of cylinder)-->
+                <!-- hack-for wheels collision is better to use a sphere(instead of cylinder)-->
                 <!-- shpere has only one point of collision -->
                 <geometry>
                     <sphere radius="${wheel_radius}"></sphere>
