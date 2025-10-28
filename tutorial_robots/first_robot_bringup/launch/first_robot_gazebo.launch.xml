@@ -19,7 +19,8 @@
 
     <!-- ros2 launch ros_gz_sim gz_sim.launch.py gz_args:="empty.sdf -r" -->  
     <include file="$(find-pkg-share ros_gz_sim)/launch/gz_sim.launch.py">
-            <arg name="gz_args" value="empty.sdf -r"></arg>
+            <arg name="gz_args" value="$(find-pkg-share first_robot_bringup)/world/world.sdf -r"></arg>
+            <!-- <arg name="gz_args" value="empty.sdf -r"></arg> -->
     </include>
 
     <!-- ros2 run ros_gz_sim create -topic robot_description -->
