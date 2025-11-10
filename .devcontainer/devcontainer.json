@@ -4,16 +4,19 @@
 
   "remoteUser": "root",
 
+  // needed because of GPU issues on linux
   "hostRequirements": {
     "gpu": "optional"
   },
 
+  // needed because of GPU issues on linux
   "runArgs": [
     "-e", "DISPLAY=${localEnv:DISPLAY}",
     "--device=/dev/dri"
   ],
 
   "mounts": [
+    // needed because of GPU issues on linux
     "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,readonly",
     "source=${env:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached"
   ],
