@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:property name="camera_length" value="0.01"></xacro:property>
+    <xacro:property name="camera_width" value="0.1"></xacro:property>
+    <xacro:property name="camera_height" value="0.05"></xacro:property>
+
+    <link name="camera_link">
+        <visual>
+            <geometry>
+                <box size="${camera_length} ${camera_width} ${camera_height}"></box>
+            </geometry>
+            <material name="grey"></material>
+            <origin xyz="0 0 0" rpy="0 0 0"></origin>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="${camera_length} ${camera_width} ${camera_height}"></box>
+            </geometry>
+        </collision>
+        <xacro:box_inertia m="0.1" x="${camera_length}" y="${camera_width}" z="${camera_height}"
+                            o_xyz="0 0 0" o_rpy="0 0 0"></xacro:box_inertia>
+    </link>
+
+    <joint name="camera_base_join" type="fixed">
+        <parent link="base_link"></parent>
+        <child link="camera_link"></child>
+        <origin xyz="${(base_length + camera_length)/2} 0 ${base_height/2}" rpy="0 0 0"></origin>
+    </joint>
+
+    <!-- added just for compatibility with OpenCv-->
+    <!-- gazebo and OpenCv have different way of setting the ref axis-->
+    <!-- gazebo has x-axis to the front while OpenCv has z-axis to the front -->
+    <link name="camera_link_optical"></link>
+        <joint name="camera_optical_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
+        <parent link="camera_link"/>
+        <child link="camera_link_optical"/>
+    </joint>
+
+    <gazebo reference="camera_link">
+        <sensor name="camera" type="camera">
+            <camera>
+                <horizontal_fov>1.3962634</horizontal_fov>
+                <image>
+                    <width>640</width>
+                    <height>480</height>
+                    <format>R8G8B8</format>
+                </image>
+                <clip>
+                    <near>0.1</near>
+                    <far>15</far>
+                </clip>
+                <noise>
+                    <type>gaussian</type>
+                    <mean>0.0</mean>
+                    <stddev>0.007</stddev>
+                </noise>
+                <!-- must match the camera link name -->
+                <optical_frame_id>camera_link_optical</optical_frame_id>
+                <!-- topic for information of the camera (gazebo topic) -->
+                <camera_info_topic>camera/camera_info</camera_info_topic>
+            </camera>
+            <always_on>1</always_on>
+            <update_rate>20</update_rate>
+            <visualize>true</visualize>
+            <!-- topic for image gazebo topic) -->
+            <topic>camera/image_raw</topic>
+        </sensor>
+    </gazebo>
+
+
+</robot>
