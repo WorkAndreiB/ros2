@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<robot name="robot_arm" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:include filename="colors.xacro"></xacro:include>
+    <xacro:include filename="links_macro.xacro"></xacro:include>
+
+    <xacro:property name="base_link_length" value="0.5"></xacro:property>
+    <xacro:property name="base_link_width" value="0.5"></xacro:property>
+    <xacro:property name="base_link_height" value="0.2"></xacro:property>
+    <link name="base_link">
+        <visual>
+            <geometry>
+                <box size="${base_link_length} ${base_link_width} ${base_link_height}"></box>
+            </geometry>
+            <origin xyz="0 0 ${base_link_height/2.0}" rpy="0 0 0"></origin>
+            <material name="grey"></material>
+        </visual>
+    </link>
+
+    <xacro:property name="shoulder_link_length" value="0.5"></xacro:property>
+    <xacro:property name="shoulder_link_radius" value="0.1"></xacro:property>
+    <xacro:cylinder_link name="shoulder_link" length="${shoulder_link_length}" radius="${shoulder_link_radius}"
+                        origin_xyz="0 0 ${shoulder_link_length/2.0}" material="blue"></xacro:cylinder_link> 
+
+    <xacro:property name="arm_link_length" value="0.6"></xacro:property>
+    <xacro:property name="arm_link_radius" value="0.05"></xacro:property>
+    <xacro:cylinder_link name="arm_link" length="${arm_link_length}" radius="${arm_link_radius}"
+                        origin_xyz="0 0 ${arm_link_length/2.0}" material="grey"></xacro:cylinder_link> 
+
+    <xacro:property name="elbow_link_length" value="0.1"></xacro:property>
+    <xacro:property name="elbow_link_radius" value="0.05"></xacro:property>
+    <xacro:cylinder_link name="elbow_link" length="${elbow_link_length}" radius="${elbow_link_radius}"
+                            origin_xyz="0 0 ${elbow_link_length/2.0}" material="blue"></xacro:cylinder_link> 
+
+    <xacro:property name="forearm_link_length" value="0.5"></xacro:property>
+    <xacro:property name="forearm_link_radius" value="0.05"></xacro:property>
+    <xacro:cylinder_link name="foream_link" length="${forearm_link_length}" radius="${forearm_link_radius}"
+                            origin_xyz="0 0 ${forearm_link_length/2.0}" material="grey"></xacro:cylinder_link> 
+
+
+    <!-- Joints -->
+    <!-- 1 -->
+    <joint name="base_shoulder_joint" type="revolute">
+        <parent link="base_link"></parent>
+        <child link="shoulder_link"></child>
+        <origin xyz="0 0 ${base_link_height}" rpy="0 0 0"></origin>
+        <axis xyz="0 0 1"></axis>
+        <limit effort="100.0" velocity="1.0" lower="-3.14" upper="3.14"></limit>
+    </joint>
+
+    <!-- 2 -->
+    <joint name="shoulder_arm_joint" type="revolute">
+        <parent link="shoulder_link"></parent>
+        <child link="arm_link"></child>
+        <origin xyz="0 0 ${shoulder_link_length}" rpy="0 0 0"></origin>
+        <axis xyz="0 1 0"></axis>
+        <limit effort="100.0" velocity="1.0" lower="0.0" upper="2.5"></limit>
+    </joint>
+
+    <!-- 3 -->
+    <joint name="arm_elbow_joint" type="revolute">
+        <parent link="arm_link"></parent>
+        <child link="elbow_link"></child>
+        <origin xyz="0 0 ${arm_link_length}" rpy="0 0 0"></origin>
+        <axis xyz="0 1 0"></axis>
+        <limit effort="100.0" velocity="1.0" lower="0.0" upper="2.5"></limit>
+    </joint>
+
+    <!-- 4 -->
+    <joint name="elbow_forearm_joint" type="revolute">
+        <parent link="elbow_link"></parent>
+        <child link="foream_link"></child>
+        <origin xyz="0 0 ${elbow_link_length}" rpy="0 0 0"></origin>
+        <axis xyz="0 0 1"></axis>
+        <limit effort="100.0" velocity="1.0" lower="-3.14" upper="3.14"></limit>
+    </joint>
+
+</robot>
