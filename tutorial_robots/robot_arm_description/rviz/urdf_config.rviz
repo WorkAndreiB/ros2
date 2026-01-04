@@ -81,7 +81,7 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        foream_link:
+        forearm_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -126,7 +126,7 @@ Visualization Manager:
           Value: true
         elbow_link:
           Value: true
-        foream_link:
+        forearm_link:
           Value: true
         hand_link:
           Value: true
@@ -146,7 +146,7 @@ Visualization Manager:
           shoulder_link:
             arm_link:
               elbow_link:
-                foream_link:
+                forearm_link:
                   wrist_link:
                     hand_link:
                       tool_link:

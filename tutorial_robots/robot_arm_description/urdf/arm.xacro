@@ -27,7 +27,7 @@
 
     <xacro:property name="forearm_link_length" value="0.5"></xacro:property>
     <xacro:property name="forearm_link_radius" value="0.05"></xacro:property>
-    <xacro:cylinder_link name="foream_link" length="${forearm_link_length}" radius="${forearm_link_radius}"
+    <xacro:cylinder_link name="forearm_link" length="${forearm_link_length}" radius="${forearm_link_radius}"
                             origin_xyz="0 0 ${forearm_link_length/2.0}" material="grey"></xacro:cylinder_link> 
 
     <xacro:property name="wrist_link_length" value="0.1"></xacro:property>
@@ -75,7 +75,7 @@
     <!-- 4 -->
     <joint name="elbow_forearm_joint" type="revolute">
         <parent link="elbow_link"></parent>
-        <child link="foream_link"></child>
+        <child link="forearm_link"></child>
         <origin xyz="0 0 ${elbow_link_length}" rpy="0 0 0"></origin>
         <axis xyz="0 0 1"></axis>
         <limit effort="100.0" velocity="1.0" lower="-3.14" upper="3.14"></limit>
@@ -83,7 +83,7 @@
 
     <!-- 5 -->
     <joint name="forearm_wrist_joint" type="revolute">
-        <parent link="foream_link"></parent>
+        <parent link="forearm_link"></parent>
         <child link="wrist_link"></child>
         <origin xyz="0 0 ${forearm_link_length}" rpy="0 0 0"></origin>
         <axis xyz="0 1 0"></axis>

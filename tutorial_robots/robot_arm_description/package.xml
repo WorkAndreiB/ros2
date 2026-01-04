@@ -3,9 +3,9 @@
 <package format="3">
   <name>robot_arm_description</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="andrei.baciu94@gmail.com">root</maintainer>
-  <license>TODO: License declaration</license>
+  <description>Robot arm description package providing URDF and related configuration files for the tutorial robot.</description>
+  <maintainer email="andrei.baciu94@gmail.com">Andrei B</maintainer>
+  <license>BSD-3-Clause</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
