@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:macro name="box_link" params="name length width height origin_xyz material">
+        <link name="${name}">
+            <visual>
+                <geometry>
+                    <box size="${length} ${width} ${height}"></box>
+                </geometry>
+                <origin xyz="${origin_xyz}" rpy="0 0 0"></origin>
+                <material name="${material}"></material>
+            </visual>
+        </link>
+    </xacro:macro>
+
+    <xacro:macro name="cylinder_link" params="name length radius origin_xyz material">
+        <link name="${name}">
+            <visual>
+                <geometry>
+                    <cylinder length="${length}" radius="${radius}"></cylinder>
+                </geometry>
+                <origin xyz="${origin_xyz}" rpy="0 0 0"></origin>
+                <material name="${material}"></material>
+            </visual>
+        </link>
+    </xacro:macro>
+
+</robot>
