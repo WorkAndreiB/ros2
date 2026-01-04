@@ -40,7 +40,13 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     ros-jazzy-tf2-tools \
     ros-jazzy-xacro \
     #gazebo dependencies
-    ros-jazzy-ros-gz
+    ros-jazzy-ros-gz \
+    ros-jazzy-moveit
+
+# Install ros2 controllers
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
+    ros-jazzy-ros2-control \
+    ros-jazzy-ros2-controllers
 
 # Source ROS2 workspace
 RUN echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc

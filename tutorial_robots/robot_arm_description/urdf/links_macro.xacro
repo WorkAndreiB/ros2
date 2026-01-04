@@ -10,6 +10,12 @@
                 <origin xyz="${origin_xyz}" rpy="0 0 0"></origin>
                 <material name="${material}"></material>
             </visual>
+            <collision>
+                <geometry>
+                    <box size="${length} ${width} ${height}"></box>
+                </geometry>
+                <origin xyz="${origin_xyz}" rpy="0 0 0"></origin>
+            </collision>
         </link>
     </xacro:macro>
 
@@ -22,6 +28,13 @@
                 <origin xyz="${origin_xyz}" rpy="0 0 0"></origin>
                 <material name="${material}"></material>
             </visual>
+            <!-- use box instead of cylinder for simpler collision computations -->
+            <collision>
+                <geometry>
+                    <box size="${radius*2.0} ${radius*2.0} ${length}"></box>
+                </geometry>
+                <origin xyz="${origin_xyz}" rpy="0 0 0"></origin>
+            </collision>
         </link>
     </xacro:macro>
 
