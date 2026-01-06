@@ -7,6 +7,8 @@
     <xacro:include filename="arm.xacro"></xacro:include>
     <xacro:include filename="gripper.xacro"></xacro:include>
 
+    <xacro:include filename="robot_arm.ros2_control.xacro"></xacro:include>
+
     <!-- 8 -->
     <joint name="tool_gripper_joint" type="fixed">
         <parent link="tool_link"></parent>
