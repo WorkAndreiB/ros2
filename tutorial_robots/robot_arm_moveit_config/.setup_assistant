@@ -1,0 +1,23 @@
+moveit_setup_assistant_config:
+  urdf:
+    package: robot_arm_description
+    relative_path: urdf/robot_arm.xacro
+  srdf:
+    relative_path: config/robot_arm.srdf
+  package_settings:
+    author_name: AndreiB
+    author_email: andrei@gmail.com
+    generated_timestamp: 1767721775
+  control_xacro:
+    command:
+      - position
+    state:
+      - position
+  modified_urdf:
+    xacros:
+      - control_xacro
+  control_xacro:
+    command:
+      - position
+    state:
+      - position

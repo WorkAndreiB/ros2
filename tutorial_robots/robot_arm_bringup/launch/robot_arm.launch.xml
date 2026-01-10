@@ -1,0 +1,43 @@
+<launch>
+
+    <!-- launch robot state publisher-->
+    <let name="urdf_path"
+        value="$(find-pkg-share robot_arm_description)/urdf/robot_arm.xacro"></let>
+
+    <!--
+    ros2 run robot_state_publisher robot_state_publisher -(remove this when used)-ros-args -p 
+    robot_description:="$(xacro /workspaces/ros2/tutorial_robots/robot_arm_description/urdf/robot_arm.xacro)" 
+    -->
+    <node pkg="robot_state_publisher" exec="robot_state_publisher">
+        <param name="robot_description" value="$(command 'xacro $(var urdf_path)')">
+        </param>
+    </node>
+
+
+    <!-- launch ros2 controllers -->
+    <let name="controllers_path"
+        value="$(find-pkg-share robot_arm_bringup)/config/ros2_controllers.yaml"></let>
+
+    <!-- ros2 run controller_manager ros2_control_node -(remove this when used)-ros-args 
+    -(remove this when used)-params-file /workspaces/ros2/tutorial_robots/robot_arm_bringup/config/ros2_controllers.yaml -->
+    <node pkg="controller_manager" exec="ros2_control_node">
+        <param from="$(var controllers_path)"></param>
+    </node>
+
+    <!-- launch controller manager -->
+    <!-- ros2 run controller_manager spawner arm_controller --> 
+    <node pkg="controller_manager" exec="spawner" args="joint_state_broadcaster"></node>
+    <node pkg="controller_manager" exec="spawner" args="arm_controller"></node>
+    <node pkg="controller_manager" exec="spawner" args="gripper_controller"></node>
+
+    <!-- ros2 launch robot_arm_moveit_config move_group.launch.py -->
+    <include file="$(find-pkg-share robot_arm_moveit_config)/launch/move_group.launch.py"></include>
+
+    <!-- launch rviz2 -->
+    <let name="rviz_config_path"
+        value="$(find-pkg-share robot_arm_bringup)/rviz/urdf_config.rviz"></let>
+
+    <!-- ros2 run rviz2 rviz2 -d /workspaces/ros2/tutorial_robots/robot_arm_bringup/rviz/urdf_config.rviz -->
+    <node pkg="rviz2" exec="rviz2" output="screen" args="-d $(var rviz_config_path)"></node>
+
+</launch>

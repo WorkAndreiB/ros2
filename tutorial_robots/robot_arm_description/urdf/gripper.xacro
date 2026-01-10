@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    
+    <xacro:property name="gripper_base_link_length" value="0.2"></xacro:property>
+    <xacro:property name="gripper_base_link_width" value="0.06"></xacro:property>
+    <xacro:property name="gripper_base_link_height" value="0.02"></xacro:property>
+    <xacro:box_link name="gripper_base_link" length="${gripper_base_link_length}" width="${gripper_base_link_width}" height="${gripper_base_link_height}"
+                    origin_xyz="0 0 ${gripper_base_link_height/2.0}" material="dark_green"></xacro:box_link>
+
+    <xacro:property name="finger_link_length" value="0.02"></xacro:property>
+    <xacro:property name="finger_link_width" value="0.06"></xacro:property>
+    <xacro:property name="finger_link_height" value="0.08"></xacro:property>
+
+    <xacro:box_link name="finger_link" length="${finger_link_length}" width="${finger_link_width}" height="${finger_link_height}"
+                    origin_xyz="0 0 ${finger_link_height/2.0}" material="light_green"></xacro:box_link>
+
+    <xacro:box_link name="right_finger_link" length="${finger_link_length}" width="${finger_link_width}" height="${finger_link_height}"
+                    origin_xyz="0 0 ${finger_link_height/2.0}" material="light_green"></xacro:box_link>
+
+    <joint name="gripper_left_finger_joint" type="prismatic">
+        <parent link="gripper_base_link"></parent>
+        <child link="finger_link"></child>
+        <origin xyz="${-gripper_base_link_length/2.0} 0 ${gripper_base_link_height}" rpy="0 0 0"></origin>
+        <axis xyz="1 0 0 "></axis>
+        <limit effort="100.0" velocity="1.0" lower="0.0" upper="${0.1 - finger_link_width/3.0}"></limit>
+    </joint>
+
+    <joint name="gripper_right_finger_joint" type="prismatic">
+        <parent link="gripper_base_link"></parent>
+        <child link="right_finger_link"></child>
+        <origin xyz="${gripper_base_link_length/2.0} 0 ${gripper_base_link_height}" rpy="0 0 0"></origin>
+        <axis xyz="1 0 0 "></axis>
+        <mimic joint="gripper_left_finger_joint" multiplier="-1.0"></mimic>
+        <limit effort="100.0" velocity="1.0" lower="-${0.1 - finger_link_width/3.0}" upper="0.0"></limit>
+    </joint>
+
+</robot>
