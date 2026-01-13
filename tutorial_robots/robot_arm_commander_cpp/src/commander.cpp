@@ -1,14 +1,14 @@
-#include "commander.hpp"
+#include "robot_arm_commander_cpp/commander.hpp"
 
-Commander::Commander(std::shared_ptr<rclcpp::Node> node) : node_(node) {
+Commander::Commander(const rclcpp::Node::SharedPtr &node) : node_(node) {
   arm_ = std::make_shared<MoveGroupInterface>(node_, "arm");
   gripper_ = std::make_shared<MoveGroupInterface>(node_, "gripper");
 
-  setScallingFactor(arm_);
-  setScallingFactor(gripper_);
+  setScalingFactor(arm_);
+  setScalingFactor(gripper_);
 }
 
-void Commander::setScallingFactor(
+void Commander::setScalingFactor(
     std::shared_ptr<MoveGroupInterface> interface) {
   interface->setMaxAccelerationScalingFactor(0.5);
   interface->setMaxVelocityScalingFactor(0.5);
@@ -23,6 +23,9 @@ void Commander::planAndExecute(
 
   if (success) {
     interface->execute(plan);
+  } else {
+    RCLCPP_ERROR(node_->get_logger(),
+                 "Motion planning failed in planAndExecute.");
   }
 }
 
@@ -87,4 +90,4 @@ void Commander::moveArmToPositionTarget(const PositionTarget target,
 
 void Commander::openGripper() { moveToNamedTarget("open", gripper_); }
 
-void Commander::openGripper() { moveToNamedTarget("closed", gripper_); }
+void Commander::closeGripper() { moveToNamedTarget("closed", gripper_); }

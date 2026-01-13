@@ -45,7 +45,7 @@ struct PositionTarget {
 
 class Commander {
 public:
-  Commander(std::shared_ptr<rclcpp::Node> node);
+  Commander(const rclcpp::Node::SharedPtr &node);
   void moveArmToNamedTarget(const std::string &target);
   void moveArmToJointTarget(const std::vector<double> &joints);
   void moveArmToPositionTarget(const PositionTarget position,
@@ -59,11 +59,11 @@ private:
                          const std::shared_ptr<MoveGroupInterface> &interface);
   void moveToJointTarget(const std::vector<double> &joints,
                          const std::shared_ptr<MoveGroupInterface> &interface);
-  void setScallingFactor(std::shared_ptr<MoveGroupInterface> interface);
+
+  void setScalingFactor(std::shared_ptr<MoveGroupInterface> interface);
   void planAndExecute(const std::shared_ptr<MoveGroupInterface> &interface);
 
-  std::shared_ptr<rclcpp::Node> node_;
-
+  const rclcpp::Node::SharedPtr &node_;
   std::shared_ptr<MoveGroupInterface> arm_;
   std::shared_ptr<MoveGroupInterface> gripper_;
 };
