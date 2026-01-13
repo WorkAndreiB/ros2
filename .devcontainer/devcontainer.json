@@ -1,37 +1,37 @@
 {
-  "name": "ros2work",
-  "dockerFile": "Dockerfile",
-  "remoteUser": "root",
-  // needed because of GPU issues on linux
-  "hostRequirements": {
-    "gpu": "optional"
-  },
-  // needed because of GPU issues on linux
-  "runArgs": [
-    "-e",
-    "DISPLAY=${localEnv:DISPLAY}",
-    "--device=/dev/dri"
-  ],
-  "mounts": [
+    "name": "ros2work",
+    "dockerFile": "Dockerfile",
+    "remoteUser": "root",
     // needed because of GPU issues on linux
-    "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,readonly",
-    "source=${env:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached"
-  ],
-  "customizations": {
-    "vscode": {
-      "settings": {
-        "terminal.integrated.shell.linux": "/bin/bash"
-      },
-      "extensions": [
-        "ms-python.python",
-        "ms-azuretools.vscode-docker",
-        "ms-iot.vscode-ros",
-        "twxs.cmake",
-        "dotjoshjohnson.xml",
-        "redhat.vscode-xml",
-        "xaver.clang-format"
-      ]
-    }
-  },
-  "postCreateCommand": "git config --global user.email 'andrei.baciu94@gmail.com' && git config --global user.name 'Andrei B'"
+    "hostRequirements": {
+        "gpu": "optional"
+    },
+    // needed because of GPU issues on linux
+    "runArgs": [
+        "-e",
+        "DISPLAY=${localEnv:DISPLAY}",
+        "--device=/dev/dri"
+    ],
+    "mounts": [
+        // needed because of GPU issues on linux
+        "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,readonly",
+        "source=${env:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached"
+    ],
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.shell.linux": "/bin/bash"
+            },
+            "extensions": [
+                "ms-python.python",
+                "ms-azuretools.vscode-docker",
+                "ms-iot.vscode-ros",
+                "twxs.cmake",
+                "dotjoshjohnson.xml",
+                "redhat.vscode-xml",
+                "xaver.clang-format"
+            ]
+        }
+    },
+    "postCreateCommand": "git config --global user.email 'andrei.baciu94@gmail.com' && git config --global user.name 'Andrei B'"
 }
