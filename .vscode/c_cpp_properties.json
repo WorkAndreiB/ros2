@@ -9,7 +9,8 @@
                 "/opt/ros/jazzy/include/**",
                 "/workspaces/ros2/src/cpp_package/include/**",
                 "/usr/include/**",
-                "${workspaceFolder}/tutorial_robots/robot_arm_commander_cpp/include"
+                "${workspaceFolder}/tutorial_robots/robot_arm_commander_cpp/include",
+                "${workspaceFolder}/tutorial_robots/robot_arm_controller/include"
             ],
             "name": "ROS",
             "intelliSenseMode": "gcc-x64",
