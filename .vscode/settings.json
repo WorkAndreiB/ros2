@@ -11,5 +11,13 @@
     "python.analysis.extraPaths": [
         "/opt/ros/jazzy/lib/python3.12/site-packages"
     ],
-    "ros.distro": "jazzy"
+    "ros.distro": "jazzy",
+    "clang-format.executable": "/usr/bin/clang-format",
+    "editor.formatOnSave": true,
+    "[cmake]": {
+        "editor.defaultFormatter": "twxs.cmake"
+    },
+    "[cpp]": {
+        "editor.defaultFormatter": "xaver.clang-format"
+    }
 }

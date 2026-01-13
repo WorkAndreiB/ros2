@@ -3,3 +3,5 @@ numpy
 pandas
 PyYAML
 catkin_pkg
+empy
+lark
