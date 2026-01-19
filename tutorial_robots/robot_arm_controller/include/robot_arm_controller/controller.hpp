@@ -1,7 +1,6 @@
 #ifndef ROBOT_ARM_CONTROLLER_CONTROLLER_HPP
 #define ROBOT_ARM_CONTROLLER_CONTROLLER_HPP
 
-#include "example_interfaces/msg/string.hpp"
 #include <rclcpp/rclcpp.hpp>
 
 #include <robot_arm_commander_cpp/commander.hpp>
@@ -21,8 +20,8 @@ private:
   void executeArmJointsCommand(
       const robot_arm_interfaces::msg::JointsTarget::SharedPtr msg);
 
-  void
-  executeGripperCommand(const example_interfaces::msg::String::SharedPtr msg);
+  void executeGripperCommand(
+      const robot_arm_interfaces::msg::NamedTarget::SharedPtr msg);
 
   rclcpp::Subscription<robot_arm_interfaces::msg::NamedTarget>::SharedPtr
       arm_named_state_listener_;
@@ -30,7 +29,7 @@ private:
   rclcpp::Subscription<robot_arm_interfaces::msg::JointsTarget>::SharedPtr
       arm_joints_listener_;
 
-  rclcpp::Subscription<example_interfaces::msg::String>::SharedPtr
+  rclcpp::Subscription<robot_arm_interfaces::msg::NamedTarget>::SharedPtr
       gripper_listener_;
 
   std::unique_ptr<Commander> arm_commander_;
