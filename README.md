@@ -4,12 +4,12 @@ Ros2 learning project using mainly C++ and Python
 
 Env: Ros2 Jazzy distro
 
-## Table of content
-- [Ros jazy instalation steps](https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html)
+## Table of contents
+- [Ros jazy installation steps](https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html)
 - [Simple ros components](/simple_ros_components/README.md)
 - [Robotics](/tutorial_robots/README.md)
 - [Documentation links](#documentation-links)
-- [Usefull commands](#commands)
+- [Useful commands](#commands)
 
 ### Documentation links
 

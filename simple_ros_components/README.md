@@ -1,5 +1,5 @@
 # Basic Ros instructions
-This component is used to create simple ros commponents like ros2 nodes, or ros2 service client for learning purposes
+This component is used to create simple ros components like ros2 nodes, or ros2 service server&client, action server&client for learning purposes
 
 
 # Nodes

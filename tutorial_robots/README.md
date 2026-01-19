@@ -1,7 +1,7 @@
 # Robotics
-This component is used to create and interact with some somple robots
+This component is used to create and interact with some simple robots
 
-## Table of content
+## Table of contents
 - [First robot](#first-robot)
 - [Robot arm](#robot-arm)
 - [Tools](#tools)
@@ -34,9 +34,7 @@ ros2 run robot_arm_controller ArmControllerExec
 Use ros command line interface to send requests to robot arm
 - Keep in mind that the arm and the gripper use different ros topics 
 
-`
-ros2 topic pub robot_arm/arm_command/named_target robot_arm_interfaces/msg/NamedTarget "{named_target: 'pose_1'} -1"
-`
+`ros2 topic pub robot_arm/arm_command/named_target robot_arm_interfaces/msg/NamedTarget "{named_target: 'pose_1'} -1"`
 
 ![Robot arm demo](/docs/robot_arm_home.png)
 
