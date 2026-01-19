@@ -1,45 +1,68 @@
-# Learn project
+# Learn projects
 
-Ros2 learning project using C++ and Python 
+Ros2 learning project using mainly C++ and Python 
 
-Using Ros2 Jazzy distro
+Env: Ros2 Jazzy distro
 
 ## Table of content
 - [Ros jazy instalation steps](https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html)
 - [Simple ros components](/simple_ros_components/README.md)
-- [Robotics](#robotics)
-    - [Tutorials](#urdf-tutorial)
-    - [Documentation links](#documentation-links)
-
-
-## Robotics components
-
-### URDF Tutorial
-URDF (Unified Robot Description Format)
-
-#### Create tf tree
-
-- need package: `ros-jazzy-tf2-tools`
-- run 
-```sh
-ros2 run tf2_tools view_frames
-```
-
-#### Run robot state publisher:
-
-```sh
-ros2 run robot_state_publisher robot_state_publisher --ros-args -p robot_description:="$(xacro tutorial_robots/my_robot.urdf)"
-```
-
-```sh
-ros2 run joint_state_publisher_gui joint_state_publisher_gui
-```
-
-```sh
-ros2 run rviz2 rviz2
-```
-
+- [Robotics](/tutorial_robots/README.md)
+- [Documentation links](#documentation-links)
+- [Usefull commands](#commands)
 
 ### Documentation links
 
-+ URDF: https://wiki.ros.org/urdf/XML
++ [URDF](https://wiki.ros.org/urdf/XML)
++ [Ros Interfaces](https://docs.ros.org/en/foxy/Concepts/About-ROS-Interfaces.html)
+
+### Commands
+
+## Build
+- build entire workspace
+```bash 
+    colcon build
+```
+
+- build specified package
+```bash 
+    colcon build --packages-select <package_name>
+```
+
+## Source
+Source workspace after any changes:
+
+```bash
+    source install/setup.bash
+```
+
+## Run
+Runs a specific ROS 2 node from a package.
+
+`ros2 run <package_name> <executable_name>`
+
+## Launch 
+Launches a set of ROS 2 nodes and configurations required to run the system.
+
+`ros2 launch <package_name> <launch_file>.launch.py`
+
+## Topics
+- see topics
+```bash 
+    ros2 topic list
+```
+
+- see topics info: type, number of publisher, number of subscribers
+```bash 
+    ros2 topic info /<topic_name>
+```
+
+- listen on specific topic
+```bash 
+    ros2 topic echo /<topic>
+```
+
+- publish message on specific topic
+```bash 
+    ros2 topic pub -r <number_of_msg_per_second> <topic> <type> "{<data_field>: <data>}"
+```
