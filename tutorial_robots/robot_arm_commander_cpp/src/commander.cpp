@@ -84,6 +84,8 @@ void Commander::moveArmToPositionTarget(const PositionTarget target,
     double fraction = arm_->computeCartesianPath(waypoints, 0.01, trajectory);
     if (fraction == 1) {
       arm_->execute(trajectory);
+    } else {
+      RCLCPP_ERROR(node_->get_logger(), "Cartesian path execution failed");
     }
   }
 }

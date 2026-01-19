@@ -45,6 +45,6 @@ void RobotArmController::executeGripperCommand(
   } else if (msg->data == "open") {
     arm_commander_->openGripper();
   } else {
-    RCLCPP_INFO(this->get_logger(), "unknown gripper command");
+    RCLCPP_ERROR(this->get_logger(), "unknown gripper command");
   }
 }
