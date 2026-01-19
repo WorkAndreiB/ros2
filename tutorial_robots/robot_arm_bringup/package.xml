@@ -3,7 +3,7 @@
 <package format="3">
   <name>robot_arm_bringup</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>Bringup package providing launch files and configuration to start the robot arm with controllers, state publisher, and RViz/MoveIt integration.</description>
   <maintainer email="andrei@gmail.com">AndreiB</maintainer>
 
   <license>BSD-3-Clause</license>
