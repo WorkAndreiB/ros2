@@ -8,7 +8,6 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(example_interfaces REQUIRED)
 find_package(robot_arm_commander_cpp REQUIRED)
 find_package(robot_arm_interfaces REQUIRED)
 
@@ -19,7 +18,6 @@ target_include_directories(ArmControllerLib PUBLIC
 )
 ament_target_dependencies(ArmControllerLib 
     rclcpp 
-    example_interfaces 
     robot_arm_commander_cpp 
     robot_arm_interfaces
 )

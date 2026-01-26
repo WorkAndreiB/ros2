@@ -14,9 +14,15 @@ RobotArmController::RobotArmController() : Node("robot_arm_controller") {
                     std::placeholders::_1));
 
   gripper_listener_ =
-      this->create_subscription<example_interfaces::msg::String>(
+      this->create_subscription<robot_arm_interfaces::msg::NamedTarget>(
           "robot_arm/gripper_command", 10,
           std::bind(&RobotArmController::executeGripperCommand, this,
+                    std::placeholders::_1));
+
+  arm_position_target_listener_ =
+      this->create_subscription<robot_arm_interfaces::msg::PositionTarget>(
+          "robot_arm/arm_command/position_target", 10,
+          std::bind(&RobotArmController::executeArmTargetPositionCommand, this,
                     std::placeholders::_1));
 }
 
@@ -37,14 +43,30 @@ void RobotArmController::executeArmJointsCommand(
 }
 
 void RobotArmController::executeGripperCommand(
-    const example_interfaces::msg::String::SharedPtr msg) {
-  RCLCPP_INFO(this->get_logger(), msg->data.c_str());
+    const robot_arm_interfaces::msg::NamedTarget::SharedPtr msg) {
+  RCLCPP_INFO(this->get_logger(), msg->named_target.c_str());
 
-  if (msg->data == "close") {
+  if (msg->named_target == "close") {
     arm_commander_->closeGripper();
-  } else if (msg->data == "open") {
+  } else if (msg->named_target == "open") {
     arm_commander_->openGripper();
   } else {
     RCLCPP_ERROR(this->get_logger(), "unknown gripper command");
   }
+}
+
+void RobotArmController::executeArmTargetPositionCommand(
+    const robot_arm_interfaces::msg::PositionTarget::SharedPtr msg) {
+  arm_commander_->moveArmToPositionTarget(PositionTarget{
+      Point3D{
+          msg->position.x,
+          msg->position.y,
+          msg->position.z,
+      },
+      Orientation{
+          msg->orientation.roll,
+          msg->orientation.pitch,
+          msg->orientation.yaw,
+      },
+  });
 }
