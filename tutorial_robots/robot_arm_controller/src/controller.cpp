@@ -18,6 +18,12 @@ RobotArmController::RobotArmController() : Node("robot_arm_controller") {
           "robot_arm/gripper_command", 10,
           std::bind(&RobotArmController::executeGripperCommand, this,
                     std::placeholders::_1));
+
+  arm_position_target_listener_ =
+      this->create_subscription<robot_arm_interfaces::msg::PositionTarget>(
+          "robot_arm/arm_command/position_target", 10,
+          std::bind(&RobotArmController::executeArmTargetPositionCommand, this,
+                    std::placeholders::_1));
 }
 
 void RobotArmController::init() {
@@ -47,4 +53,20 @@ void RobotArmController::executeGripperCommand(
   } else {
     RCLCPP_ERROR(this->get_logger(), "unknown gripper command");
   }
+}
+
+void RobotArmController::executeArmTargetPositionCommand(
+    const robot_arm_interfaces::msg::PositionTarget::SharedPtr msg) {
+  arm_commander_->moveArmToPositionTarget(PositionTarget{
+      Point3D{
+          msg->position.x,
+          msg->position.y,
+          msg->position.z,
+      },
+      Orientation{
+          msg->orientation.roll,
+          msg->orientation.pitch,
+          msg->orientation.yaw,
+      },
+  });
 }

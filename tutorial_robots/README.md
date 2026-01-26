@@ -40,8 +40,12 @@ Use ros command line interface to send requests to robot arm
 
 The robot arm moves to the predefined target `pose_1`.
 
-
 ![Move arm to pose_1](/docs/robot_arm_pose_1.png)
+
+
+To move arm to specific point using specific orientation: 
+
+`ros2 topic pub robot_arm/arm_command/position_target robot_arm_interfaces/msg/PositionTarget "{position: {x: 0.7, y: 0.0, z: 0.4}, orientation: {roll: 3.14, pitch: 0.0, yaw: 0.0}}"`
 
 
 ### Tools

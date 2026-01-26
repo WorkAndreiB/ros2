@@ -7,6 +7,7 @@
 
 #include <robot_arm_interfaces/msg/joints_target.hpp>
 #include <robot_arm_interfaces/msg/named_target.hpp>
+#include <robot_arm_interfaces/msg/position_target.hpp>
 
 class RobotArmController : public rclcpp::Node {
 public:
@@ -23,11 +24,17 @@ private:
   void executeGripperCommand(
       const robot_arm_interfaces::msg::NamedTarget::SharedPtr msg);
 
+  void executeArmTargetPositionCommand(
+      const robot_arm_interfaces::msg::PositionTarget::SharedPtr msg);
+
   rclcpp::Subscription<robot_arm_interfaces::msg::NamedTarget>::SharedPtr
       arm_named_state_listener_;
 
   rclcpp::Subscription<robot_arm_interfaces::msg::JointsTarget>::SharedPtr
       arm_joints_listener_;
+
+  rclcpp::Subscription<robot_arm_interfaces::msg::PositionTarget>::SharedPtr
+      arm_position_target_listener_;
 
   rclcpp::Subscription<robot_arm_interfaces::msg::NamedTarget>::SharedPtr
       gripper_listener_;
