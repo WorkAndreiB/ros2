@@ -29,7 +29,8 @@
                 "twxs.cmake",
                 "dotjoshjohnson.xml",
                 "redhat.vscode-xml",
-                "xaver.clang-format"
+                "xaver.clang-format",
+                "ms-python.black-formatter"
             ]
         }
     },
