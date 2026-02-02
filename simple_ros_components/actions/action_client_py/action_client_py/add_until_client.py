@@ -4,7 +4,7 @@ import rclpy
 from rclpy.node import Node
 from rclpy.action import ActionClient
 from action_interfaces.action import AddUntil
-from rclpy.action.client import ClientGoalHandle
+from rclpy.action.client import ClientGoalHandle, GoalStatus
 
 
 class AddUntilClientNode(Node):
@@ -40,7 +40,15 @@ class AddUntilClientNode(Node):
             self.get_logger().warn("Goal got rejected")
 
     def goal_result_callback(self, future):
+        # check status of request
+        status = future.result().status
         result = future.result().result
+
+        if status == GoalStatus.STATUS_SUCCEEDED:
+            self.get_logger().info("Success")
+        elif status == GoalStatus.STATUS_ABORTED:
+            self.get_logger().error("Aborted")
+
         self.get_logger().info(f"Client result = {result.sum}")
 
 

@@ -7,6 +7,7 @@ from rclpy.action.server import ServerGoalHandle
 from rclpy.action import ActionServer, GoalResponse
 
 import time
+import random
 
 
 class AddUntilServer(Node):
@@ -34,6 +35,14 @@ class AddUntilServer(Node):
             sum += i
             self.get_logger().info(f"Sum = {sum}")
             time.sleep(period)
+
+            # simulate random fail events
+            num = random.randrange(1, 100)
+            if num <= 3:
+                goal_handle.abort()
+                result = AddUntil.Result()
+                result.sum = sum
+                return result
 
         # set goal final state
         goal_handle.succeed()
