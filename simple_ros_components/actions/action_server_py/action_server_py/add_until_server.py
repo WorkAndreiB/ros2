@@ -30,10 +30,13 @@ class AddUntilServer(Node):
 
         # execute action
         self.get_logger().info("Executing...")
+        feedback = AddUntil.Feedback()
         sum = 0
         for i in range(number):
             sum += i
             self.get_logger().info(f"Sum = {sum}")
+            feedback.intermediate_sum = sum
+            goal_handle.publish_feedback(feedback)
             time.sleep(period)
 
             # simulate random fail events

@@ -25,16 +25,25 @@ class AddUntilClientNode(Node):
             goal.period = period
 
             self.get_logger().info("Sending command to server...")
-            response_handle = self.add_until_client_.send_goal_async(goal)
+
+            response_handle = self.add_until_client_.send_goal_async(
+                goal=goal, feedback_callback=self.goal_feedback_callback
+            )
+
             response_handle.add_done_callback(self.goal_response_callback)
 
         else:
             self.get_logger().error("Server is not ready...")
 
+    # feedback callback
+    def goal_feedback_callback(self, feedback):
+        self.get_logger().info(f"Feedback: {feedback.feedback.intermediate_sum}")
+
     def goal_response_callback(self, future):
         goal_handle: ClientGoalHandle = future.result()
 
         if goal_handle.accepted:
+            self.get_logger().info("Goal accepted")
             goal_handle.get_result_async().add_done_callback(self.goal_result_callback)
         else:
             self.get_logger().warn("Goal got rejected")
@@ -56,7 +65,7 @@ def main(args=None):
     rclpy.init(args=args)
 
     node = AddUntilClientNode()
-    node.send_goal(12, 1.5)
+    node.send_goal(11, 0.5)
 
     rclpy.spin(node)
 
