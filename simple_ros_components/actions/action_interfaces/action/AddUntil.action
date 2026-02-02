@@ -1,0 +1,9 @@
+# Goal
+int64 target_number
+float64 period
+---
+# Result
+int64 sum
+---
+# Feedback
+int64 intermediate_sum
