@@ -30,7 +30,8 @@
                 "dotjoshjohnson.xml",
                 "redhat.vscode-xml",
                 "xaver.clang-format",
-                "ms-python.black-formatter"
+                "ms-python.black-formatter",
+                "adam-bender.commit-message-editor"
             ]
         }
     },
