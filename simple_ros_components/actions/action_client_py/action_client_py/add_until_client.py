@@ -14,41 +14,88 @@ class AddUntilClientNode(Node):
             node=self, action_type=AddUntil, action_name="AddUntil"
         )
 
+        # Declare ROS parameters with default values
+        self.declare_parameter("target_number", 10)
+        self.declare_parameter("period", 0.5)
+
     def send_goal(self, target_number, period):
-        # wait for server
+        """
+        Send a goal to the AddUntil action server.
+
+        Args:
+            target_number (int): The number up to which values will be added.
+            period (float): Time delay (in seconds) between additions.
+        """
+
+        # wait for server to be available
         is_server_ready_ = self.add_until_client_.wait_for_server(5)
 
-        if is_server_ready_:
-            self.get_logger().info("Server is ready...")
-            goal = AddUntil.Goal()
-            goal.target_number = target_number
-            goal.period = period
-
-            self.get_logger().info("Sending command to server...")
-
-            response_handle = self.add_until_client_.send_goal_async(
-                goal=goal, feedback_callback=self.goal_feedback_callback
-            )
-
-            response_handle.add_done_callback(self.goal_response_callback)
-
-        else:
+        if not is_server_ready_:
             self.get_logger().error("Server is not ready...")
+            return
 
-    # feedback callback
+        self.get_logger().info("Server is ready...")
+
+        # Populate the goal message
+        goal = AddUntil.Goal()
+        goal.target_number = target_number
+        goal.period = period
+
+        self.get_logger().info("Sending command to server...")
+
+        # Send the goal asynchronously
+        response_handle = self.add_until_client_.send_goal_async(
+            goal=goal, feedback_callback=self.goal_feedback_callback
+        )
+
+        # Register callback for goal acceptance/rejection
+        response_handle.add_done_callback(self.goal_response_callback)
+
     def goal_feedback_callback(self, feedback):
+        """
+        Callback function for receiving feedback from the action server.
+
+        Args:
+            feedback (AddUntil.FeedbackMessage): Feedback message containing
+            the current intermediate sum.
+        """
         self.get_logger().info(f"Feedback: {feedback.feedback.intermediate_sum}")
 
     def goal_response_callback(self, future):
-        goal_handle: ClientGoalHandle = future.result()
+        """
+        Callback function for handling the goal response.
 
-        if goal_handle.accepted:
-            self.get_logger().info("Goal accepted")
-            goal_handle.get_result_async().add_done_callback(self.goal_result_callback)
-        else:
-            self.get_logger().warn("Goal got rejected")
+        This is called once the server accepts or rejects the goal.
+
+        Args:
+            future: Future object containing the ClientGoalHandle.
+        """
+        try:
+            goal_handle: ClientGoalHandle = future.result()
+        except Exception as e:
+            self.get_logger().error(f"Goal request exception: {e}")
+            return
+
+        if goal_handle is None:
+            self.get_logger().error("Invalid goal handle")
+            return
+
+        if not goal_handle.accepted:
+            self.get_logger().warning("Goal got rejected")
+            return
+
+        self.get_logger().info("Goal accepted")
+        # Request the final result asynchronously
+        goal_handle.get_result_async().add_done_callback(self.goal_result_callback)
 
     def goal_result_callback(self, future):
+        """
+        Callback function for handling the final result of the action.
+
+        Args:
+            future: Future object containing the result and status.
+        """
+
         # check status of request
         status = future.result().status
         result = future.result().result
@@ -65,7 +112,11 @@ def main(args=None):
     rclpy.init(args=args)
 
     node = AddUntilClientNode()
-    node.send_goal(11, 0.5)
+
+    target_number = node.get_parameter("target_number").value
+    period = node.get_parameter("period").value
+
+    node.send_goal(target_number, period)
 
     rclpy.spin(node)
 
