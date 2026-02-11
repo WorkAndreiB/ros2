@@ -1,8 +1,15 @@
-# Basic Ros instructions
+# Ros commponents
+Component containing multiple packages exemplifying the capabilities available in ROS
+
+## Table of contents
+- [Actions](actions/README.md)
+- [Instructions](#basic-ros-instructions)
+
+## Basic Ros instructions
 This component is used to create simple ros components like ros2 nodes, or ros2 service server&client, action server&client for learning purposes
 
 
-# Nodes
+## Nodes
 - rename node at runtime 
 ```bash  
     ros2 run <package_name> <node_name> --ros-args -r __node:=<new_node_name>
@@ -28,7 +35,7 @@ This component is used to create simple ros components like ros2 nodes, or ros2 
     ros2 node info <node>
 ```
 
-# Topics
+## Topics
 - see topics
 ```bash 
     ros2 topic list
@@ -55,7 +62,7 @@ This component is used to create simple ros components like ros2 nodes, or ros2 
 ```
 Example: ros2 topic pub -r 5 robot_news example_interfaces/msg/String  "{data: 'Hello'}"
 
-# Interface
+## Interfaces
 - see interface implementation detail
 ```bash 
     ros2 interface show <interface>
