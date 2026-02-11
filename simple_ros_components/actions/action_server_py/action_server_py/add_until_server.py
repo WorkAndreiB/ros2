@@ -20,7 +20,9 @@ import rclpy
 from rclpy.node import Node
 from action_interfaces.action import AddUntil
 from rclpy.action.server import ServerGoalHandle
-from rclpy.action import ActionServer, GoalResponse
+from rclpy.action import ActionServer, GoalResponse, CancelResponse
+from rclpy.executors import MultiThreadedExecutor
+from rclpy.callback_groups import ReentrantCallbackGroup
 
 import time
 import random
@@ -36,6 +38,8 @@ class AddUntilServer(Node):
             action_name="AddUntil",
             goal_callback=self.goal_callback,
             execute_callback=self.add_until_callback,
+            cancel_callback=self.cancel_callback,
+            callback_group=ReentrantCallbackGroup(),
         )
 
         self.get_logger().info("AddUntil action server has been started")
@@ -63,9 +67,19 @@ class AddUntilServer(Node):
 
         # execute action
         self.get_logger().info("Executing...")
+
+        result = AddUntil.Result()
         feedback = AddUntil.Feedback()
+
         sum = 0
         for i in range(number):
+            # check if request is canceled
+            if goal_handle.is_cancel_requested:
+                self.get_logger().info("Canceling goal")
+                goal_handle.canceled()
+                result.sum = sum
+                return result
+
             sum += i
             self.get_logger().info(f"Sum = {sum}")
 
@@ -88,7 +102,6 @@ class AddUntilServer(Node):
         goal_handle.succeed()
 
         # Return result
-        result = AddUntil.Result()
         result.sum = sum
 
         return result
@@ -133,6 +146,10 @@ class AddUntilServer(Node):
         self.get_logger().info("Accept target number")
         return GoalResponse.ACCEPT
 
+    def cancel_callback(self, goal_handle: ServerGoalHandle):
+        self.get_logger().info("Reveived cancel request")
+        return CancelResponse.ACCEPT
+
 
 def main(args=None):
     # first thing is to init
@@ -140,7 +157,7 @@ def main(args=None):
 
     node = AddUntilServer()
 
-    rclpy.spin(node)
+    rclpy.spin(node, MultiThreadedExecutor())
 
     # shutdown at the end
     rclpy.shutdown()

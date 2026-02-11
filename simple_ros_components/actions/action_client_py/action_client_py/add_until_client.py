@@ -61,6 +61,11 @@ class AddUntilClientNode(Node):
         """
         self.get_logger().info(f"Feedback: {feedback.feedback.intermediate_sum}")
 
+        # For testing purpose, triger cancel request
+        # if feedback.feedback.intermediate_sum == 91:
+        #     print("Canceling goal")
+        #     self.goal_handle_.cancel_goal_async()
+
     def goal_response_callback(self, future):
         """
         Callback function for handling the goal response.
@@ -71,22 +76,24 @@ class AddUntilClientNode(Node):
             future: Future object containing the ClientGoalHandle.
         """
         try:
-            goal_handle: ClientGoalHandle = future.result()
+            self.goal_handle_: ClientGoalHandle = future.result()
         except Exception as e:
             self.get_logger().error(f"Goal request exception: {e}")
             return
 
-        if goal_handle is None:
+        if self.goal_handle_ is None:
             self.get_logger().error("Invalid goal handle")
             return
 
-        if not goal_handle.accepted:
+        if not self.goal_handle_.accepted:
             self.get_logger().warning("Goal got rejected")
             return
 
         self.get_logger().info("Goal accepted")
         # Request the final result asynchronously
-        goal_handle.get_result_async().add_done_callback(self.goal_result_callback)
+        self.goal_handle_.get_result_async().add_done_callback(
+            self.goal_result_callback
+        )
 
     def goal_result_callback(self, future):
         """
@@ -101,9 +108,11 @@ class AddUntilClientNode(Node):
         result = future.result().result
 
         if status == GoalStatus.STATUS_SUCCEEDED:
-            self.get_logger().info("Success")
+            self.get_logger().info("Succeeded goal")
         elif status == GoalStatus.STATUS_ABORTED:
-            self.get_logger().error("Aborted")
+            self.get_logger().error("Aborted goal")
+        elif status == GoalStatus.STATUS_CANCELED:
+            self.get_logger().info("Canceled goal")
 
         self.get_logger().info(f"Client result = {result.sum}")
 
