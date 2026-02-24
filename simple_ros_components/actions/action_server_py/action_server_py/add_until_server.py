@@ -36,20 +36,22 @@ class AddUntilServer(Node):
         super().__init__("add_until_action_server")
         self.goal_handle_: ServerGoalHandle = None
         self.goal_lock_ = threading.Lock()
+        self.goal_queue_ = []
         self.add_until_server_ = ActionServer(
             node=self,
             action_type=AddUntil,
             action_name="AddUntil",
             goal_callback=self.goal_callback,
+            handle_accepted_callback=self.handle_accepted_callback,
             execute_callback=self.add_until_callback,
             cancel_callback=self.cancel_callback,
             callback_group=ReentrantCallbackGroup(),
         )
 
-        self.valid_goal_policy_options_ = {"paralel", "reject", "preempt"}
+        self.valid_goal_policy_options_ = {"paralel", "reject", "preempt", "queue"}
         goal_policy_descriptor = ParameterDescriptor(
             description="Goal policy option",
-            additional_constraints="Valid options: paralel, reject, preempt",
+            additional_constraints="Valid options: paralel, reject, preempt, queue",
         )
         self.declare_parameter(
             name="goal_policy", value="paralel", descriptor=goal_policy_descriptor
@@ -111,8 +113,8 @@ class AddUntilServer(Node):
         with self.goal_lock_:
             self.goal_handle_ = goal_handle
 
-        number = goal_handle.request.target_number
-        period = goal_handle.request.period
+        number = self.goal_handle_.request.target_number
+        period = self.goal_handle_.request.period
 
         # execute action
         self.get_logger().info("Executing...")
@@ -120,15 +122,15 @@ class AddUntilServer(Node):
         result = AddUntil.Result()
         feedback = AddUntil.Feedback()
 
-        print(f"About to set sum = 0 from thread:{threading.get_ident()}")
         sum = 0
         for i in range(number):
 
             # check if request is canceled
-            if goal_handle.is_cancel_requested:
+            if self.goal_handle_.is_cancel_requested:
                 self.get_logger().info("Canceling goal")
-                goal_handle.canceled()
+                self.goal_handle_.canceled()
                 result.sum = sum
+                self.process_next_goal_in_queue()
                 return result
 
             sum += i
@@ -136,7 +138,7 @@ class AddUntilServer(Node):
 
             # Publish feedback
             feedback.intermediate_sum = sum
-            goal_handle.publish_feedback(feedback)
+            self.goal_handle_.publish_feedback(feedback)
 
             # Simulate execution
             time.sleep(period)
@@ -144,23 +146,36 @@ class AddUntilServer(Node):
             # Simulate random fail events
             num = random.randrange(1, 100)
             if num <= 1:
-                goal_handle.abort()
+                self.goal_handle_.abort()
                 result = AddUntil.Result()
                 result.sum = sum
+                self.process_next_goal_in_queue()
                 return result
 
-            if not goal_handle.is_active:
+            if not self.goal_handle_.is_active:
                 self.get_logger().info("Aborting current goal")
                 print(f"Return {sum} from thread {threading.get_ident()}")
                 result.sum = sum
                 print(f"Return {result.sum} from thread {threading.get_ident()}")
+                self.process_next_goal_in_queue()
                 return result
 
         # Mark goal as successfully completed
-        goal_handle.succeed()
+        self.goal_handle_.succeed()
         # Return result
         result.sum = sum
+        self.process_next_goal_in_queue()
         return result
+
+    def _validate_goal(goal_request: AddUntil.Goal) -> tuple[bool, str]:
+        if goal_request.target_number <= 0:
+            return False, "Reject target number <= 0"
+
+        if goal_request.target_number % 2 == 1:
+            return False, f"Reject odd target number {goal_request.target_number}"
+
+        if goal_request.period < 0 or goal_request.period > 10:
+            return False, "Reject period not in [0,10]"
 
     def goal_callback(self, goal_request: AddUntil.Goal):
         """
@@ -214,8 +229,27 @@ class AddUntilServer(Node):
                     self.get_logger().info("Abort current goal and accept new goal")
                     self.goal_handle_.abort()
 
+                elif self.goal_policy_ == "queue":
+                    return GoalResponse.ACCEPT
+
         self.get_logger().info("Accept goal")
         return GoalResponse.ACCEPT
+
+    def process_next_goal_in_queue(self):
+        with self.goal_lock_:
+            if len(self.goal_queue_) > 0:
+                self.goal_queue_.pop(0).execute()
+            else:
+                self.goal_handle_ = None
+
+    def handle_accepted_callback(self, goal_handle: ServerGoalHandle):
+        with self.goal_lock_:
+            if self.goal_handle_ is not None:
+                self.goal_queue_.append(goal_handle)
+            else:
+                # execute received goal
+                # triger add_until_callback
+                goal_handle.execute()
 
     def cancel_callback(self, goal_handle: ServerGoalHandle):
         self.get_logger().info("Reveived cancel request")
