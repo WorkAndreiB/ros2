@@ -30,6 +30,8 @@ import time
 import random
 import threading
 
+from .validators import validate_goal
+
 
 class AddUntilServer(Node):
     def __init__(self):
@@ -167,16 +169,6 @@ class AddUntilServer(Node):
         self.process_next_goal_in_queue()
         return result
 
-    def _validate_goal(goal_request: AddUntil.Goal) -> tuple[bool, str]:
-        if goal_request.target_number <= 0:
-            return False, "Reject target number <= 0"
-
-        if goal_request.target_number % 2 == 1:
-            return False, f"Reject odd target number {goal_request.target_number}"
-
-        if goal_request.period < 0 or goal_request.period > 10:
-            return False, "Reject period not in [0,10]"
-
     def goal_callback(self, goal_request: AddUntil.Goal):
         """
         Goal validation callback.
@@ -199,19 +191,9 @@ class AddUntilServer(Node):
 
         self.get_logger().info("Goal received")
 
-        # Validate goal request
-        if goal_request.target_number <= 0:
-            self.get_logger().info("Reject target number <= 0")
-            return GoalResponse.REJECT
-
-        if goal_request.target_number % 2 == 1:
-            self.get_logger().info(
-                f"Reject odd target number {goal_request.target_number}"
-            )
-            return GoalResponse.REJECT
-
-        if goal_request.period < 0 or goal_request.period > 10:
-            self.get_logger().info("Reject period not in [0,10]")
+        is_goal_valid, reason = validate_goal(goal_request)
+        if not is_goal_valid:
+            self.get_logger().info(f"Reject: {reason}")
             return GoalResponse.REJECT
 
         # Check goal policy. reject, run in paralel or preempt new goal
@@ -244,6 +226,7 @@ class AddUntilServer(Node):
 
     def handle_accepted_callback(self, goal_handle: ServerGoalHandle):
         with self.goal_lock_:
+            # if there is already a goal present, queue the new goal
             if self.goal_handle_ is not None:
                 self.goal_queue_.append(goal_handle)
             else:
