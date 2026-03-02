@@ -50,13 +50,13 @@ class AddUntilServer(Node):
             callback_group=ReentrantCallbackGroup(),
         )
 
-        self.valid_goal_policy_options_ = {"paralel", "reject", "preempt", "queue"}
+        self.valid_goal_policy_options_ = ("parallel", "reject", "preempt", "queue")
         goal_policy_descriptor = ParameterDescriptor(
             description="Goal policy option",
-            additional_constraints="Valid options: paralel, reject, preempt, queue",
+            additional_constraints=f"Valid options: {self.valid_goal_policy_options_}",
         )
         self.declare_parameter(
-            name="goal_policy", value="paralel", descriptor=goal_policy_descriptor
+            name="goal_policy", value="parallel", descriptor=goal_policy_descriptor
         )
         self.goal_policy_ = self.get_parameter("goal_policy").value
 
@@ -69,8 +69,9 @@ class AddUntilServer(Node):
         # Register callback to validate policy at runtime changes
         self.add_on_set_parameters_callback(self.validate_goal_policy)
 
-        self.get_logger().info("AddUntil action server has been started")
-        self.get_logger().info(f"goal_policy: {self.goal_policy_}")
+        self.get_logger().info(
+            f"AddUntil action server has been started with policy: {self.goal_policy_}"
+        )
 
     def validate_goal_policy(self, params):
         """
@@ -91,6 +92,10 @@ class AddUntilServer(Node):
                         successful=False,
                         reason=f"Invalid goal policy. Use only {self.valid_goal_policy_options_}",
                     )
+                else:
+                    # Apply the valid update to the internal goal policy state
+                    self.goal_policy_ = param.value
+                    self.get_logger().info(f"New goal policys: {self.goal_policy_}")
 
         return SetParametersResult(successful=True)
 
@@ -115,8 +120,8 @@ class AddUntilServer(Node):
         with self.goal_lock_:
             self.goal_handle_ = goal_handle
 
-        number = self.goal_handle_.request.target_number
-        period = self.goal_handle_.request.period
+        number = goal_handle.request.target_number
+        period = goal_handle.request.period
 
         # execute action
         self.get_logger().info("Executing...")
@@ -128,9 +133,9 @@ class AddUntilServer(Node):
         for i in range(number):
 
             # check if request is canceled
-            if self.goal_handle_.is_cancel_requested:
+            if goal_handle.is_cancel_requested:
                 self.get_logger().info("Canceling goal")
-                self.goal_handle_.canceled()
+                goal_handle.canceled()
                 result.sum = sum
                 self.process_next_goal_in_queue()
                 return result
@@ -140,32 +145,31 @@ class AddUntilServer(Node):
 
             # Publish feedback
             feedback.intermediate_sum = sum
-            self.goal_handle_.publish_feedback(feedback)
+            goal_handle.publish_feedback(feedback)
 
             # Simulate execution
             time.sleep(period)
 
             # Simulate random fail events
-            num = random.randrange(1, 100)
-            if num <= 1:
-                self.goal_handle_.abort()
-                result = AddUntil.Result()
-                result.sum = sum
-                self.process_next_goal_in_queue()
-                return result
+            # num = random.randrange(1, 100)
+            # if num <= 1:
+            #     self.goal_handle_.abort()
+            #     result = AddUntil.Result()
+            #     result.sum = sum
+            #     self.process_next_goal_in_queue()
+            #     return result
 
-            if not self.goal_handle_.is_active:
+            if not goal_handle.is_active:
                 self.get_logger().info("Aborting current goal")
-                print(f"Return {sum} from thread {threading.get_ident()}")
                 result.sum = sum
-                print(f"Return {result.sum} from thread {threading.get_ident()}")
                 self.process_next_goal_in_queue()
                 return result
 
         # Mark goal as successfully completed
-        self.goal_handle_.succeed()
+        goal_handle.succeed()
         # Return result
         result.sum = sum
+
         self.process_next_goal_in_queue()
         return result
 
@@ -182,11 +186,14 @@ class AddUntilServer(Node):
         - Reject if period is not in [0, 10]
         - Otherwise accept
 
+        Policy acceptance rule:
+        - Reject all new goals if policy is `reject` and there is an active goal
+
         Args:
             goal_request (AddUntil.Goal): Incoming goal request.
 
         Returns:
-            GoalResponse: ACCEPT or REJECT depending on validation.
+            GoalResponse: ACCEPT or REJECT depending on validation and policy.
         """
 
         self.get_logger().info("Goal received")
@@ -198,7 +205,7 @@ class AddUntilServer(Node):
 
         # Check goal policy. reject, run in paralel or preempt new goal
         with self.goal_lock_:
-            # Check against the first received goal
+            # Check against the current goal
             if self.goal_handle_ is not None:
                 # Check goal policy and if there is an active goal request
                 if self.goal_policy_ == "reject" and self.goal_handle_.is_active:
@@ -207,17 +214,15 @@ class AddUntilServer(Node):
                     )
                     return GoalResponse.REJECT
 
-                elif self.goal_policy_ == "preempt" and self.goal_handle_.is_active:
-                    self.get_logger().info("Abort current goal and accept new goal")
-                    self.goal_handle_.abort()
-
-                elif self.goal_policy_ == "queue":
-                    return GoalResponse.ACCEPT
-
+        # Accept all valid goals if goal policy is not reject
         self.get_logger().info("Accept goal")
         return GoalResponse.ACCEPT
 
     def process_next_goal_in_queue(self):
+        """
+        Execute the next goal in the queue, if any.
+        If queue is empty clears self.goal_handle_ to indicate that no goal is currently active
+        """
         with self.goal_lock_:
             if len(self.goal_queue_) > 0:
                 self.goal_queue_.pop(0).execute()
@@ -225,17 +230,45 @@ class AddUntilServer(Node):
                 self.goal_handle_ = None
 
     def handle_accepted_callback(self, goal_handle: ServerGoalHandle):
+        """
+        Called after a goal has been accepted but before execution starts.
+
+        This callback decides when and how the accepted goal begins execution.
+        Typical uses:
+            - Start immediately (parallel execution)
+            - Queue for later (sequential execution)
+            - Preempt an active goal
+        """
         with self.goal_lock_:
-            # if there is already a goal present, queue the new goal
-            if self.goal_handle_ is not None:
-                self.goal_queue_.append(goal_handle)
-            else:
-                # execute received goal
-                # triger add_until_callback
-                goal_handle.execute()
+
+            match self.goal_policy_:
+                case "parallel":
+                    # Parallel policy: always execute new goals immediately
+                    goal_handle.execute()
+
+                case "queue":
+                    if self.goal_handle_ is not None or self.goal_handle_.is_active:
+                        self.goal_queue_.append(goal_handle)
+                        self.get_logger().info("Queue new goal")
+                    else:
+                        # execute received goal
+                        # triger add_until_callback
+                        goal_handle.execute()
+
+                case "preempt":
+                    # Preempt policy: new goal preempts any current goal and starts immediately
+                    if self.goal_handle_ is not None and self.goal_handle_.is_active:
+                        # abort any active goals
+                        self.get_logger().info("Abort current goal and execute new one")
+                        self.goal_handle_.abort()
+                    goal_handle.execute()
+
+                case "reject":
+                    if self.goal_handle_ is None:
+                        goal_handle.execute()
 
     def cancel_callback(self, goal_handle: ServerGoalHandle):
-        self.get_logger().info("Reveived cancel request")
+        self.get_logger().info("Received cancel request")
         return CancelResponse.ACCEPT
 
 
