@@ -19,7 +19,7 @@ from rclpy.task import Future
 
 # method required by launch_testing
 # tells ROS what nodes to be started before running tests
-# equivalent with: ros2 run action_server_py add_until_server --ros-args -p goal_policy:=queue
+# equivalent with: ros2 run action_server_py add_until_server --ros-args -p goal_policy:=parallel
 @pytest.mark.rostest
 def generate_test_description():
     action_server = launch_ros.actions.Node(
@@ -42,6 +42,8 @@ def generate_test_description():
 
 
 class TestAddUntilActionServer(unittest.TestCase):
+    FUTURE_TIMEOUT_SEC = 5.0
+
     @classmethod
     def setUpClass(cls):
         rclpy.init()
@@ -67,14 +69,11 @@ class TestAddUntilActionServer(unittest.TestCase):
                 Goal handle returned by the server.
         """
         send_goal_future = client.send_goal_async(goal)
-        rclpy.spin_until_future_complete(self.node, send_goal_future)
+        rclpy.spin_until_future_complete(
+            self.node, send_goal_future, timeout_sec=self.FUTURE_TIMEOUT_SEC
+        )
 
         return send_goal_future.result()
-
-        result_future = goal_handle.get_result_async()
-        rclpy.spin_until_future_complete(self.node, result_future)
-
-        return goal_handle, result_future
 
     def wait_for_result(self, goal_handle: ClientGoalHandle) -> Future:
         """
@@ -88,7 +87,9 @@ class TestAddUntilActionServer(unittest.TestCase):
                 Completed future containing the action result.
         """
         result_future = goal_handle.get_result_async()
-        rclpy.spin_until_future_complete(self.node, result_future)
+        rclpy.spin_until_future_complete(
+            self.node, result_future, timeout_sec=self.FUTURE_TIMEOUT_SEC
+        )
         return result_future
 
     def send_goal_and_wait(
@@ -188,7 +189,9 @@ class TestAddUntilActionServer(unittest.TestCase):
 
         # wait for all goals to be processed
         for future in send_goal_futures:
-            rclpy.spin_until_future_complete(self.node, future)
+            rclpy.spin_until_future_complete(
+                self.node, future, timeout_sec=self.FUTURE_TIMEOUT_SEC
+            )
 
         # get all goal handles
         goal_handles = [future.result() for future in send_goal_futures]
@@ -201,7 +204,9 @@ class TestAddUntilActionServer(unittest.TestCase):
             goal_handle.get_result_async() for goal_handle in goal_handles
         ]
         for future in result_futures:
-            rclpy.spin_until_future_complete(self.node, future)
+            rclpy.spin_until_future_complete(
+                self.node, future, timeout_sec=self.FUTURE_TIMEOUT_SEC
+            )
 
         results = [future.result().result.sum for future in result_futures]
         expected_result = [3, 10, 21, 36, 55]
