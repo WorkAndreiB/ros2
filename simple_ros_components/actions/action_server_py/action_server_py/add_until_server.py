@@ -234,6 +234,7 @@ class AddUntilServer(Node):
 
         # use next_goal to get the next goal to be executed and release the lock before calling execute on the goal
         if next_goal is not None:
+            self.set_goal_execution_status(True, next_goal)
             next_goal.execute()
 
     def handle_accepted_callback(self, goal_handle: ServerGoalHandle):
