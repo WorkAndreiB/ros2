@@ -6,15 +6,9 @@ import launch_ros
 import launch_testing
 import launch_testing.actions
 
-from typing import Tuple
-
-from rclpy.node import Node
-from rclpy.action import ActionClient
-
 from action_interfaces.action import AddUntil
 
-from rclpy.action.client import ClientGoalHandle
-from rclpy.task import Future
+from action_server_py.action_server_test_base import AddUntilTestBase
 
 
 # method required by launch_testing
@@ -41,91 +35,18 @@ def generate_test_description():
     )
 
 
-class TestAddUntilActionServer(unittest.TestCase):
-    FUTURE_TIMEOUT_SEC = 5.0
-
-    @classmethod
-    def setUpClass(cls):
-        rclpy.init()
-        cls.node = Node("test_add_until_action_client")
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.node.destroy_node()
-        rclpy.shutdown()
-
-    def send_goal_request(
-        self, client: ActionClient, goal: AddUntil.Goal
-    ) -> ClientGoalHandle:
-        """
-        Send a goal and wait for the goal response.
-
-        Args:
-            client
-            goal
-
-        Returns:
-            ClientGoalHandle:
-                Goal handle returned by the server.
-        """
-        send_goal_future = client.send_goal_async(goal)
-        rclpy.spin_until_future_complete(
-            self.node, send_goal_future, timeout_sec=self.FUTURE_TIMEOUT_SEC
-        )
-
-        return send_goal_future.result()
-
-    def wait_for_result(self, goal_handle: ClientGoalHandle) -> Future:
-        """
-        Wait for the final result of a previously accepted goal.
-
-        Args:
-            goal_handle
-
-        Returns:
-            Future:
-                Completed future containing the action result.
-        """
-        result_future = goal_handle.get_result_async()
-        rclpy.spin_until_future_complete(
-            self.node, result_future, timeout_sec=self.FUTURE_TIMEOUT_SEC
-        )
-        return result_future
-
-    def send_goal_and_wait(
-        self, client: ActionClient, goal: AddUntil.Goal
-    ) -> Tuple[ClientGoalHandle, Future]:
-        """
-        Send a goal and wait until the final result
-
-        Args:
-            client
-            goal
-
-        Returns:
-            Tuple[ClientGoalHandle, Future]:
-        """
-        goal_handle = self.send_goal_request(client, goal)
-        result_future = self.wait_for_result(goal_handle)
-        return goal_handle, result_future
-
+class TestParallelPolicy(AddUntilTestBase):
     def test_valid_goal(self):
-        client = ActionClient(
-            node=self.node,
-            action_type=AddUntil,
-            action_name="AddUntil",
-        )
+        client = self.make_client()
 
         self.assertTrue(client.wait_for_server(timeout_sec=5.0))
 
-        goal = AddUntil.Goal()
-        goal.target_number = 4
-        goal.period = 0.01
-
-        goal_handle, result_future = self.send_goal_and_wait(client, goal)
-
+        goal = self.make_goal(target_number=4, period=0.01)
+        goal_handle = self.send_goal_request(client, goal)
         self.assertIsNotNone(goal_handle)
         self.assertTrue(goal_handle.accepted)
+
+        result_future = self.wait_for_result(goal_handle)
 
         result = result_future.result().result
 
@@ -133,52 +54,36 @@ class TestAddUntilActionServer(unittest.TestCase):
         self.assertEqual(result.sum, 10)
 
     def test_invalid_goal(self):
-        client = ActionClient(
-            node=self.node,
-            action_type=AddUntil,
-            action_name="AddUntil",
-        )
+        client = self.make_client()
 
         self.assertTrue(client.wait_for_server(timeout_sec=5.0))
 
-        goal = AddUntil.Goal()
-
         # send odd target number
-        goal.target_number = 5
-        goal.period = 0.01
-
+        goal = self.make_goal(target_number=5, period=0.01)
         goal_handle = self.send_goal_request(client, goal)
 
         self.assertIsNotNone(goal_handle)
         self.assertFalse(goal_handle.accepted)
 
         # send target number < 0
-        goal.target_number = -1
-        goal.period = 0.01
-
+        goal = self.make_goal(target_number=-1, period=0.01)
         goal_handle = self.send_goal_request(client, goal)
 
         self.assertIsNotNone(goal_handle)
         self.assertFalse(goal_handle.accepted)
 
         # send invalid period
-        goal.target_number = 6
-        goal.period = -1.0
-
+        goal = self.make_goal(target_number=6, period=-1.0)
         goal_handle = self.send_goal_request(client, goal)
 
         self.assertIsNotNone(goal_handle)
         self.assertFalse(goal_handle.accepted)
 
     def test_multiple_valid_goals(self):
-        client = ActionClient(
-            node=self.node,
-            action_type=AddUntil,
-            action_name="AddUntil",
-        )
+        client = self.make_client()
         self.assertTrue(client.wait_for_server(timeout_sec=5.0))
 
-        goals = [AddUntil.Goal(target_number=i * 2, period=0.02) for i in range(1, 6)]
+        goals = [self.make_goal(target_number=i * 2, period=0.02) for i in range(1, 6)]
 
         send_goal_futures = []
 

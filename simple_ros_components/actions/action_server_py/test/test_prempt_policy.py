@@ -1,27 +1,19 @@
 import pytest
-import rclpy
-import unittest
 import launch
 import launch_ros
 import launch_testing
 import launch_testing.actions
 
-from typing import Tuple
-
-from rclpy.node import Node
-from rclpy.action import ActionClient
-
 from action_interfaces.action import AddUntil
 
-from rclpy.action.client import ClientGoalHandle
-from rclpy.task import Future
+from rclpy.action.client import GoalStatus
 
 from action_server_py.action_server_test_base import AddUntilTestBase
 
 
 # method required by launch_testing
 # tells ROS what nodes to be started before running tests
-# equivalent with: ros2 run action_server_py add_until_server --ros-args -p goal_policy:=reject
+# equivalent with: ros2 run action_server_py add_until_server --ros-args -p goal_policy:=queue
 @pytest.mark.rostest
 def generate_test_description():
     action_server = launch_ros.actions.Node(
@@ -29,7 +21,7 @@ def generate_test_description():
         executable="add_until_server",
         name="add_until_server",
         output="screen",
-        arguments=["--ros-args", "-p", "goal_policy:=reject"],
+        arguments=["--ros-args", "-p", "goal_policy:=preempt"],
     )
 
     return (
@@ -43,7 +35,7 @@ def generate_test_description():
     )
 
 
-class TestRejectPolicy(AddUntilTestBase):
+class TestPreemptPolicy(AddUntilTestBase):
     def test_valid_goal(self):
         client = self.make_client()
 
@@ -61,7 +53,7 @@ class TestRejectPolicy(AddUntilTestBase):
         # final assertion
         self.assertEqual(result.sum, 10)
 
-    def test_reject_goal(self):
+    def test_queued_goal(self):
         client = self.make_client()
         self.assertTrue(client.wait_for_server(timeout_sec=5.0))
 
@@ -75,11 +67,19 @@ class TestRejectPolicy(AddUntilTestBase):
         goal2 = self.make_goal(target_number=6, period=0.01)
         goal_handle2 = self.send_goal_request(client, goal2)
         self.assertIsNotNone(goal_handle2)
-        self.assertFalse(goal_handle2.accepted)
+        self.assertTrue(goal_handle2.accepted)
 
-        result_future = self.wait_for_result(goal_handle1)
+        result_future1 = self.wait_for_result(goal_handle1)
+        self.assertIsNotNone(result_future1)
+        result_future2 = self.wait_for_result(goal_handle2)
+        self.assertIsNotNone(result_future2)
 
-        result = result_future.result().result
+        status1 = result_future1.result().status
+        self.assertEqual(status1, GoalStatus.STATUS_ABORTED)
+
+        status2 = result_future2.result().status
+        self.assertEqual(status2, GoalStatus.STATUS_SUCCEEDED)
+        result2 = result_future2.result().result
 
         # final assertion
-        self.assertEqual(result.sum, 10)
+        self.assertEqual(result2.sum, 21)

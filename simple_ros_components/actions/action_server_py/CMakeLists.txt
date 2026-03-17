@@ -17,8 +17,10 @@ install(PROGRAMS
 
 if(BUILD_TESTING)
   find_package(launch_testing_ament_cmake REQUIRED)
-
   add_launch_test(test/test_parallel_policy.py)
+  add_launch_test(test/test_reject_policy.py)
+  add_launch_test(test/test_queue_policy.py)
+  add_launch_test(test/test_prempt_policy.py)
 endif()
 
 ament_package()
