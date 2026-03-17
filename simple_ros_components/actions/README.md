@@ -25,3 +25,9 @@ Valid values for `goal_policy` are:
 + See all actions available: `ros2 action list`
 + See action info: `ros2 action info /<action>`
 
+## Run tests
+```bash
+colcon build
+colcon test [--packages-select <package>]
+colcon test-result [--verbose]
+```

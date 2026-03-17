@@ -40,7 +40,7 @@ class AddUntilServer(Node):
         super().__init__("add_until_server")
         self.goal_handle_: ServerGoalHandle = None
         self.goal_lock_ = threading.Lock()
-        self.goal_queue_: deque
+        self.goal_queue_: deque = deque()
         self.is_goal_in_progress_ = False
         self.add_until_server_ = ActionServer(
             node=self,
@@ -120,7 +120,6 @@ class AddUntilServer(Node):
         Returns:
             AddUntil.Result: Final result object containing the computed sum.
         """
-        self.set_goal_execution_status(True, goal_handle)
 
         number = goal_handle.request.target_number
         period = goal_handle.request.period
@@ -235,6 +234,7 @@ class AddUntilServer(Node):
 
         # use next_goal to get the next goal to be executed and release the lock before calling execute on the goal
         if next_goal is not None:
+            self.set_goal_execution_status(True, next_goal)
             next_goal.execute()
 
     def handle_accepted_callback(self, goal_handle: ServerGoalHandle):
@@ -264,6 +264,7 @@ class AddUntilServer(Node):
                 execute_now = True
 
         if execute_now:
+            self.set_goal_execution_status(True, goal_handle)
             goal_handle.execute()
 
     def cancel_callback(self, goal_handle: ServerGoalHandle):

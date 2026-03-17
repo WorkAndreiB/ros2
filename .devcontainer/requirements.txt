@@ -5,3 +5,4 @@ PyYAML
 catkin_pkg
 empy
 lark
+pytest
