@@ -62,7 +62,7 @@ RUN /opt/venv/bin/pip install --upgrade pip
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy and install Python dependencies
-COPY requirements.txt .
+COPY .devcontainer/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Environment settings

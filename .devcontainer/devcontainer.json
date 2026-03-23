@@ -2,6 +2,7 @@
     "name": "ros2work",
     "dockerFile": "Dockerfile",
     "remoteUser": "root",
+    "context": "..",
     // needed because of GPU issues on linux
     "hostRequirements": {
         "gpu": "optional"
