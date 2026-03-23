@@ -3,19 +3,18 @@ name: Build and push Docker image
 on:
   # runs on pull requests
   pull_request:
-    paths:
+    paths: &docker_paths
     # runs only if the following files are changed
-      - 'Dockerfile'
+      - '.devcontainer/Dockerfile'
+      - '.devcontainer/requirements.txt'
       - '.github/workflows/docker_image.yaml'
 
   push:
     # runs on push to branches
     branches: 
       - main
-    paths:
-      # runs only if the following files are changed
-      - 'Dockerfile'
-      - '.github/workflows/docker_image.yaml'
+    # runs only if the following files are changed
+    paths: *docker_paths
     
 permissions:
   contents: read
@@ -23,38 +22,45 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/ros2-humble-ci
+  IMAGE_NAME: ${{ github.repository_owner }}/ros2-dev-image
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
     steps:
-      # downloads repo content into the runner
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Log in to GHCR
+        if: github.event_name == 'push'
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
+        
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=latest
-            type=sha
+            images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            tags: |
+                # main → latest
+                type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+                # push → branch name
+                type=ref,event=branch,enable=${{ github.event_name == 'push' }}
+
+                # PR → branch name (safe fallback)
+                type=raw,value=${{ github.head_ref || github.ref_name }},enable=${{ github.event_name == 'pull_request' }}
 
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./.devcontainer/Dockerfile
+          file: .devcontainer/Dockerfile
           push: ${{ github.event_name == 'push' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
