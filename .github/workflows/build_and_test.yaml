@@ -26,6 +26,11 @@ jobs:
       target_sha: ${{ github.event.pull_request.head.sha || github.sha }}
       image_name: ${{ steps.image.outputs.name }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Compute lowercase image name
         id: image
         shell: bash
