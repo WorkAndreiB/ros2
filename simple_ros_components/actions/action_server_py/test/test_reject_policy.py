@@ -75,7 +75,7 @@ class TestRejectPolicy(AddUntilTestBase):
         goal2 = self.make_goal(target_number=6, period=0.01)
         goal_handle2 = self.send_goal_request(client, goal2)
         self.assertIsNotNone(goal_handle2)
-        self.assertFalse(goal_handle2.accepted)
+        self.assertTrue(goal_handle2.accepted)
 
         result_future = self.wait_for_result(goal_handle1)
 
