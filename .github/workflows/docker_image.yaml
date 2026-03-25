@@ -30,7 +30,7 @@ permissions:
 # Global image settings used by metadata and build steps.
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/ros2-dev-image
+  IMAGE_NAME: ros2-dev-image
 
 jobs:
   build-and-push:
@@ -40,6 +40,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Compute lowercase image path
+        id: image
+        shell: bash
+        run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "path=${{ env.REGISTRY }}/${OWNER}/${{ env.IMAGE_NAME }}" >> $GITHUB_OUTPUT
 
       - name: Log in to GHCR
         if: github.event_name == 'push'
@@ -53,8 +60,8 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          # Fully qualified target image name (for example: ghcr.io/<owner>/ros2-dev-image).
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          # Fully qualified target image name in lowercase (for example: ghcr.io/<owner>/ros2-dev-image).
+          images: ${{ steps.image.outputs.path }}
           tags: |
             # `main` pushes also publish `latest`.
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}

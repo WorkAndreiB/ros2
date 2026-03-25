@@ -24,7 +24,15 @@ jobs:
     outputs:
       docker_changed: ${{ steps.filter.outputs.docker_paths }}
       target_sha: ${{ github.event.pull_request.head.sha || github.sha }}
+      image_name: ${{ steps.image.outputs.name }}
     steps:
+      - name: Compute lowercase image name
+        id: image
+        shell: bash
+        run: |
+          IMAGE_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "name=ghcr.io/${IMAGE_OWNER}/ros2-dev-image:latest" >> $GITHUB_OUTPUT
+
       - name: Detect docker-related file changes
         id: filter
         uses: dorny/paths-filter@v3
@@ -94,7 +102,7 @@ jobs:
 
     # Run all steps inside the Docker image produced by `docker_image.yaml`.
     container:
-      image: ghcr.io/${{ github.repository_owner }}/ros2-dev-image:latest
+      image: ${{ needs.detect-docker-path-changes.outputs.image_name }}
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
