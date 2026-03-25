@@ -1,0 +1,132 @@
+name: Build and test ROS 2 workspace
+
+# Purpose:
+# - Reuse the prebuilt dev image from GHCR.
+# - Build the workspace with `colcon build`.
+# - Execute tests with `colcon test` and publish test summary logs.
+# - If Docker-related files changed, wait for image workflow completion first.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+# Least-privilege permissions for this workflow.
+permissions:
+  actions: read
+  contents: read
+  packages: read
+
+jobs:
+  detect-docker-path-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      docker_changed: ${{ steps.filter.outputs.docker_paths }}
+      target_sha: ${{ github.event.pull_request.head.sha || github.sha }}
+      image_name: ${{ steps.image.outputs.name }}
+    steps:
+      - name: Compute lowercase image name
+        id: image
+        shell: bash
+        run: |
+          IMAGE_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "name=ghcr.io/${IMAGE_OWNER}/ros2-dev-image:latest" >> $GITHUB_OUTPUT
+
+      - name: Detect docker-related file changes
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            docker_paths:
+              - '.devcontainer/Dockerfile'
+              - '.devcontainer/requirements.txt'
+              - '.github/workflows/docker_image.yaml'
+
+  wait-for-image-workflow:
+    needs: detect-docker-path-changes
+    if: ${{ needs.detect-docker-path-changes.outputs.docker_changed == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Docker image workflow to finish
+        uses: actions/github-script@v7
+        env:
+          TARGET_SHA: ${{ needs.detect-docker-path-changes.outputs.target_sha }}
+        with:
+          script: |
+            const workflowName = 'Build and push Docker image';
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const sha = process.env.TARGET_SHA;
+            const timeoutMs = 30 * 60 * 1000;
+            const intervalMs = 15 * 1000;
+            const startedAt = Date.now();
+
+            while (Date.now() - startedAt < timeoutMs) {
+              const { data } = await github.rest.actions.listWorkflowRunsForRepo({
+                owner,
+                repo,
+                head_sha: sha,
+                per_page: 100,
+              });
+
+              const targetRun = data.workflow_runs.find((run) => run.name === workflowName);
+
+              if (!targetRun) {
+                core.info(`No '${workflowName}' run found yet for SHA ${sha}. Retrying...`);
+              } else {
+                core.info(`Found run ${targetRun.id} with status='${targetRun.status}' and conclusion='${targetRun.conclusion}'.`);
+
+                if (targetRun.status === 'completed') {
+                  if (targetRun.conclusion === 'success') {
+                    core.info(`'${workflowName}' completed successfully.`);
+                    return;
+                  }
+
+                  core.setFailed(`'${workflowName}' completed with conclusion '${targetRun.conclusion}'.`);
+                  return;
+                }
+              }
+
+              await new Promise((resolve) => setTimeout(resolve, intervalMs));
+            }
+
+            core.setFailed(`Timed out waiting for '${workflowName}' to complete for SHA ${sha}.`);
+
+  build-and-test:
+    needs:
+      - detect-docker-path-changes
+      - wait-for-image-workflow
+    if: ${{ needs.detect-docker-path-changes.result == 'success' && (needs.wait-for-image-workflow.result == 'success' || needs.wait-for-image-workflow.result == 'skipped') }}
+    runs-on: ubuntu-latest
+
+    # Run all steps inside the Docker image produced by `docker_image.yaml`.
+    container:
+      image: ${{ needs.detect-docker-path-changes.outputs.image_name }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Build/test the exact commit for this event.
+          ref: ${{ needs.detect-docker-path-changes.outputs.target_sha }}
+
+      - name: Build workspace
+        shell: bash
+        run: |
+          set -e
+          source /opt/ros/jazzy/setup.bash
+          rm -rf build install log
+          colcon build --event-handlers console_direct+
+
+      - name: Run tests
+        shell: bash
+        run: |
+          set -e
+          source /opt/ros/jazzy/setup.bash
+          source install/setup.bash
+          colcon test --event-handlers console_direct+
+          colcon test-result --verbose

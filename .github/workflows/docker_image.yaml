@@ -1,36 +1,52 @@
 name: Build and push Docker image
 
+# Purpose:
+# - Build the devcontainer image from `.devcontainer/Dockerfile`.
+# - Push to GHCR only on `push` events to `main`.
+# - Build (without push) on pull requests that touch Docker-related files.
+
 on:
-  # runs on pull requests
+  # Build on pull requests when Docker image sources or this workflow change.
   pull_request:
     paths: &docker_paths
-    # runs only if the following files are changed
+      # Shared list of files that should trigger image rebuilds.
       - '.devcontainer/Dockerfile'
       - '.devcontainer/requirements.txt'
       - '.github/workflows/docker_image.yaml'
 
+  # Build (and push) on updates to `main`, limited to the same file set.
   push:
-    # runs on push to branches
-    branches: 
+    branches:
       - main
-    # runs only if the following files are changed
     paths: *docker_paths
-    
+
+# Least-privilege permissions:
+# - `contents: read` for checkout.
+# - `packages: write` needed only when pushing image to GHCR.
 permissions:
   contents: read
   packages: write
 
+# Global image settings used by metadata and build steps.
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/ros2-dev-image
+  IMAGE_NAME: ros2-dev-image
 
 jobs:
   build-and-push:
+    # GitHub-hosted Linux runner for Docker buildx action.
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Compute lowercase image path
+        id: image
+        shell: bash
+        run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "path=${{ env.REGISTRY }}/${OWNER}/${{ env.IMAGE_NAME }}" >> $GITHUB_OUTPUT
 
       - name: Log in to GHCR
         if: github.event_name == 'push'
@@ -39,28 +55,36 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-        
+
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-            images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-            tags: |
-                # main → latest
-                type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+          # Fully qualified target image name in lowercase (for example: ghcr.io/<owner>/ros2-dev-image).
+          images: ${{ steps.image.outputs.path }}
+          tags: |
+            # `main` pushes also publish `latest`.
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
-                # push → branch name
-                type=ref,event=branch,enable=${{ github.event_name == 'push' }}
+            # Push events publish a branch-based tag.
+            type=ref,event=branch,enable=${{ github.event_name == 'push' }}
 
-                # PR → branch name (safe fallback)
-                type=raw,value=${{ github.head_ref || github.ref_name }},enable=${{ github.event_name == 'pull_request' }}
+            # Pull requests compute a branch-like tag for deterministic local metadata.
+            # This is useful even when `push: false` because build metadata remains stable.
+            type=raw,value=${{ github.head_ref || github.ref_name }},enable=${{ github.event_name == 'pull_request' }}
 
       - name: Build and push image
+        # GitHub Action to build and push Docker images 
         uses: docker/build-push-action@v6
         with:
+          # Build repository root using the devcontainer Dockerfile.
           context: .
           file: .devcontainer/Dockerfile
+
+          # Push only for `push` events (never for pull requests).
           push: ${{ github.event_name == 'push' }}
+
+          # Tags and labels come from metadata-action for consistency.
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
