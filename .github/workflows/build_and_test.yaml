@@ -102,7 +102,7 @@ jobs:
     needs:
       - detect-docker-path-changes
       - wait-for-image-workflow
-    if: ${{ needs.detect-docker-path-changes.result == 'success' && (needs.wait-for-image-workflow.result == 'success' || needs.wait-for-image-workflow.result == 'skipped') }}
+    if: ${{ always() && needs.detect-docker-path-changes.result == 'success' && (needs.wait-for-image-workflow.result == 'success' || needs.wait-for-image-workflow.result == 'skipped') }}
     runs-on: ubuntu-latest
 
     # Run all steps inside the Docker image produced by `docker_image.yaml`.
