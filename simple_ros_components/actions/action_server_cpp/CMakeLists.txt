@@ -11,8 +11,20 @@ find_package(rclcpp REQUIRED)
 find_package(action_interfaces REQUIRED)
 find_package(rclcpp_action REQUIRED)
 
-add_executable(add_until_server src/add_until_server.cpp)
-ament_target_dependencies(add_until_server rclcpp rclcpp_action action_interfaces)
+add_library(add_until_server_cpp STATIC 
+    src/add_until_server.cpp
+)   
+
+target_include_directories(add_until_server_cpp PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+ament_target_dependencies(add_until_server_cpp rclcpp rclcpp_action action_interfaces)
+
+add_executable(add_until_server src/main.cpp)
+
+target_link_libraries(add_until_server add_until_server_cpp)
+     
 
 install(TARGETS add_until_server
   DESTINATION lib/${PROJECT_NAME})
