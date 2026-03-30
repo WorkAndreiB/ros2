@@ -1,3 +1,6 @@
+#ifndef ADD_UNTIL_SERVER_HPP_
+#define ADD_UNTIL_SERVER_HPP_
+
 #include "action_interfaces/action/add_until.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
@@ -30,3 +33,5 @@ private:
   void execute(const std::shared_ptr<rclcpp_action::ServerGoalHandle<AddUntil>>
                    goal_handle);
 };
+
+#endif // ADD_UNTIL_SERVER_HPP_

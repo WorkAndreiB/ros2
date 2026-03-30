@@ -17,9 +17,29 @@ AddUntilServer::AddUntilServer() : Node("add_until_server") {
 
 rclcpp_action::GoalResponse
 AddUntilServer::handle_goal(const rclcpp_action::GoalUUID &uuid,
-                            std::shared_ptr<const AddUntil::Goal>) {
+                            std::shared_ptr<const AddUntil::Goal> goal) {
   RCLCPP_INFO(this->get_logger(), "Received goal");
   (void)uuid;
+
+  if (goal->target_number <= 0) {
+    RCLCPP_WARN(this->get_logger(),
+                "Rejected goal because target_number is not positive");
+    return rclcpp_action::GoalResponse::REJECT;
+  }
+
+  if (goal->target_number % 2 != 0) {
+    RCLCPP_WARN(this->get_logger(),
+                "Rejected goal: target_number must be even");
+    return rclcpp_action::GoalResponse::REJECT;
+  }
+
+  if (goal->period <= 0.0 || goal->period > 10.0) {
+    RCLCPP_WARN(this->get_logger(),
+                "Rejected goal: Period must be > 0 and <= 10 seconds");
+    return rclcpp_action::GoalResponse::REJECT;
+  }
+
+  RCLCPP_INFO(this->get_logger(), "Goal accepted");
   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
@@ -35,9 +55,10 @@ void AddUntilServer::handle_accepted(
     const std::shared_ptr<rclcpp_action::ServerGoalHandle<AddUntil>>
         goal_handle) {
   RCLCPP_INFO(this->get_logger(), "Accepted goal");
-  std::thread{std::bind(&AddUntilServer::execute, this, std::placeholders::_1),
-              goal_handle}
-      .detach();
+  auto self = this->shared_from_this();
+  std::thread{[self, goal_handle]() {
+    static_cast<AddUntilServer *>(self.get())->execute(goal_handle);
+  }}.detach();
 }
 
 void AddUntilServer::execute(
@@ -53,9 +74,9 @@ void AddUntilServer::execute(
   auto feedback = std::make_shared<AddUntil::Feedback>();
   auto result = std::make_shared<AddUntil::Result>();
 
-  int counter = 0;
+  int64_t counter = 0;
 
-  for (int i = 1; (i <= target_number) && rclcpp::ok(); ++i) {
+  for (int64_t i = 1; (i <= target_number) && rclcpp::ok(); ++i) {
     counter += i;
 
     // If cancellation is requested, return the current progress and stop.
