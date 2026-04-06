@@ -4,9 +4,17 @@ AddUntilClient::AddUntilClient() : Node("add_until_client") {
   add_until_client_ = rclcpp_action::create_client<AddUntil>(this, "AddUntil");
 }
 
-void AddUntilClient::send_goal(int target_number, double period) {
-  // wait for server to be available
-  add_until_client_->wait_for_action_server();
+void AddUntilClient::send_goal(
+    AddUntil::Goal::_target_number_type target_number,
+    AddUntil::Goal::_period_type period) {
+  // wait for server to be available. if the server is not available after 5
+  // seconds, shutdown the client.
+  if (!add_until_client_->wait_for_action_server(std::chrono::seconds(5))) {
+    RCLCPP_ERROR(this->get_logger(),
+                 "Action server not available after waiting for 5 seconds");
+    rclcpp::shutdown();
+    return;
+  }
 
   // create goal
   auto goal_msg = AddUntil::Goal();
@@ -33,6 +41,9 @@ void AddUntilClient::send_goal(int target_number, double period) {
 
         RCLCPP_INFO(this->get_logger(), "Result received: %ld",
                     result.result->sum);
+
+        // shutdown client after receiving result
+        rclcpp::shutdown();
       };
 
   send_goal_options.goal_response_callback =
@@ -40,6 +51,10 @@ void AddUntilClient::send_goal(int target_number, double period) {
                  &goal_handle) {
         if (!goal_handle) {
           RCLCPP_ERROR(this->get_logger(), "Goal was rejected by server");
+
+          // shutdown client since the goal was rejected.
+          rclcpp::shutdown();
+          return;
         } else {
           RCLCPP_INFO(this->get_logger(),
                       "Goal accepted by server, waiting for result");

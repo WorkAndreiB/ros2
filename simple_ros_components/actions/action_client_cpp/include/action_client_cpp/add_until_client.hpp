@@ -27,7 +27,8 @@ public:
    * @param target_number Upper bound for the summation sequence.
    * @param period Delay in seconds between server-side feedback updates.
    */
-  void send_goal(int target_number, double period);
+  void send_goal(AddUntil::Goal::_target_number_type target_number,
+                 AddUntil::Goal::_period_type period);
 
 private:
   /// Action client instance used to communicate with the AddUntil server.

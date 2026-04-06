@@ -86,7 +86,7 @@ void AddUntilServer::execute(
     }
 
     counter += i;
-
+    // TODO: Use flag to simulate an error when set
     // Simulate an error condition for demonstration purposes.
     // if (counter == 21) {
     //   RCLCPP_ERROR(this->get_logger(), "Simulating an error at counter=21");
