@@ -77,15 +77,23 @@ void AddUntilServer::execute(
   int64_t counter = 0;
 
   for (int64_t i = 1; (i <= target_number) && rclcpp::ok(); ++i) {
-    counter += i;
 
-    // If cancellation is requested, return the current progress and stop.
     if (goal_handle->is_canceling()) {
       result->sum = counter;
       goal_handle->canceled(result);
       RCLCPP_INFO(this->get_logger(), "Goal canceled");
       return;
     }
+
+    counter += i;
+
+    // Simulate an error condition for demonstration purposes.
+    // if (counter == 21) {
+    //   RCLCPP_ERROR(this->get_logger(), "Simulating an error at counter=21");
+    //   result->sum = counter;
+    //   goal_handle->abort(result);
+    //   return;
+    // }
 
     // Publish progress after each increment.
     feedback->intermediate_sum = counter;

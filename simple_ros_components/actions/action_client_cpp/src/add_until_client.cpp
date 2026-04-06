@@ -16,10 +16,21 @@ void AddUntilClient::send_goal(int target_number, double period) {
   auto send_goal_options = rclcpp_action::Client<AddUntil>::SendGoalOptions{};
 
   // define result callback
-  // can also use std::bind instead of lambda
+  // can also use std::bind() instead of lambda
   send_goal_options.result_callback =
       [this](const rclcpp_action::ClientGoalHandle<AddUntil>::WrappedResult
                  &result) {
+        auto status = result.code;
+        if (status == rclcpp_action::ResultCode::SUCCEEDED) {
+          RCLCPP_INFO(this->get_logger(), "Goal succeeded");
+        } else if (status == rclcpp_action::ResultCode::ABORTED) {
+          RCLCPP_WARN(this->get_logger(), "Goal was aborted");
+        } else if (status == rclcpp_action::ResultCode::CANCELED) {
+          RCLCPP_WARN(this->get_logger(), "Goal was canceled");
+        } else {
+          RCLCPP_ERROR(this->get_logger(), "Unknown result code");
+        }
+
         RCLCPP_INFO(this->get_logger(), "Result received: %ld",
                     result.result->sum);
       };
@@ -42,6 +53,13 @@ void AddUntilClient::send_goal(int target_number, double period) {
         (void)goal_handle;
         RCLCPP_INFO(this->get_logger(), "Received feedback: %ld",
                     feedback->intermediate_sum);
+
+        // Simulate canceling the goal based on feedback
+        // if (feedback->intermediate_sum > 20) {
+        //   RCLCPP_INFO(this->get_logger(),
+        //               "Canceling goal because intermediate sum is too high");
+        //   add_until_client_->async_cancel_goal(goal_handle);
+        // }
       };
 
   // send goal
