@@ -4,6 +4,9 @@
 #include "action_interfaces/action/add_until.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
+#include <array>
+#include <atomic>
+#include <string>
 
 using AddUntil = action_interfaces::action::AddUntil;
 
@@ -20,6 +23,13 @@ public:
 
 private:
   rclcpp_action::Server<AddUntil>::SharedPtr add_until_server_;
+  std::string policy_;
+  std::atomic<bool> is_goal_in_progress_{false};
+  std::array<std::string, 3> valid_policies_{
+      "parallel",
+      "reject",
+      "queue",
+  };
 
   /**
    * @brief Handle and validate a newly received goal request.
@@ -76,6 +86,29 @@ private:
    */
   void execute(const std::shared_ptr<rclcpp_action::ServerGoalHandle<AddUntil>>
                    goal_handle);
+
+  /**
+   * @brief Validate a received goal.
+   *
+   * Checks if the goal meets the required constraints:
+   * - `target_number` is positive
+   * - `target_number` is even
+   * - `period` is greater than 0 and less than or equal to 10 seconds
+   *
+   * @param goal Handle to the goal being executed.
+   * @return `true` if the goal is valid, `false` otherwise.
+   */
+  bool is_goal_valid(const std::shared_ptr<const AddUntil::Goal> goal) const;
+
+  /**
+   * @brief Validate the provided policy parameter.
+   *
+   * Checks if the policy string matches one of the predefined valid policies.
+   *
+   * @param policy The policy string to validate.
+   * @return `true` if the policy is valid, `false` otherwise.
+   */
+  bool is_policy_valid(const std::string &policy) const;
 };
 
 #endif // ADD_UNTIL_SERVER_HPP_

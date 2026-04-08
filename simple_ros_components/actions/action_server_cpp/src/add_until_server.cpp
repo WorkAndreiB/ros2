@@ -5,6 +5,16 @@
 
 AddUntilServer::AddUntilServer() : Node("add_until_server") {
 
+  this->declare_parameter<std::string>("policy", "parallel");
+
+  if (is_policy_valid(this->get_parameter("policy").as_string())) {
+    policy_ = this->get_parameter("policy").as_string();
+  } else {
+    RCLCPP_WARN(this->get_logger(),
+                "Invalid policy parameter provided. Defaulting to 'parallel'.");
+    policy_ = "parallel";
+  }
+
   add_until_server_ = rclcpp_action::create_server<AddUntil>(
       this, "AddUntil",
       std::bind(&AddUntilServer::handle_goal, this, std::placeholders::_1,
@@ -12,7 +22,9 @@ AddUntilServer::AddUntilServer() : Node("add_until_server") {
       std::bind(&AddUntilServer::handle_cancel, this, std::placeholders::_1),
       std::bind(&AddUntilServer::handle_accepted, this, std::placeholders::_1));
 
-  RCLCPP_INFO(this->get_logger(), "AddUntilServer has been started.");
+  RCLCPP_INFO(this->get_logger(),
+              "AddUntilServer has been started with policy: %s",
+              policy_.c_str());
 }
 
 rclcpp_action::GoalResponse
@@ -21,22 +33,14 @@ AddUntilServer::handle_goal(const rclcpp_action::GoalUUID &uuid,
   RCLCPP_INFO(this->get_logger(), "Received goal");
   (void)uuid;
 
-  if (goal->target_number <= 0) {
-    RCLCPP_WARN(this->get_logger(),
-                "Rejected goal because target_number is not positive");
+  if (!is_goal_valid(goal)) {
     return rclcpp_action::GoalResponse::REJECT;
-  }
-
-  if (goal->target_number % 2 != 0) {
-    RCLCPP_WARN(this->get_logger(),
-                "Rejected goal: target_number must be even");
-    return rclcpp_action::GoalResponse::REJECT;
-  }
-
-  if (goal->period <= 0.0 || goal->period > 10.0) {
-    RCLCPP_WARN(this->get_logger(),
-                "Rejected goal: Period must be > 0 and <= 10 seconds");
-    return rclcpp_action::GoalResponse::REJECT;
+  } else {
+    if (policy_ == "reject" && is_goal_in_progress_.load()) {
+      RCLCPP_WARN(this->get_logger(),
+                  "Goal rejected due to active goal in progress");
+      return rclcpp_action::GoalResponse::REJECT;
+    }
   }
 
   RCLCPP_INFO(this->get_logger(), "Goal accepted");
@@ -64,6 +68,7 @@ void AddUntilServer::handle_accepted(
 void AddUntilServer::execute(
     const std::shared_ptr<rclcpp_action::ServerGoalHandle<AddUntil>>
         goal_handle) {
+  is_goal_in_progress_.store(true);
   RCLCPP_INFO(this->get_logger(), "Executing goal");
 
   const auto target_number = goal_handle->get_goal()->target_number;
@@ -82,6 +87,7 @@ void AddUntilServer::execute(
       result->sum = counter;
       goal_handle->canceled(result);
       RCLCPP_INFO(this->get_logger(), "Goal canceled");
+      is_goal_in_progress_.store(false);
       return;
     }
 
@@ -92,6 +98,7 @@ void AddUntilServer::execute(
     //   RCLCPP_ERROR(this->get_logger(), "Simulating an error at counter=21");
     //   result->sum = counter;
     //   goal_handle->abort(result);
+    //   is_goal_in_progress_.store(false);
     //   return;
     // }
 
@@ -107,5 +114,37 @@ void AddUntilServer::execute(
     result->sum = counter;
     goal_handle->succeed(result);
     RCLCPP_INFO(this->get_logger(), "Goal succeeded");
+    is_goal_in_progress_.store(false);
   }
+}
+
+bool AddUntilServer::is_goal_valid(
+    const std::shared_ptr<const AddUntil::Goal> goal) const {
+  if (goal->target_number <= 0) {
+    RCLCPP_WARN(this->get_logger(),
+                "Rejected goal because target_number is not positive");
+    return false;
+  }
+
+  if (goal->target_number % 2 != 0) {
+    RCLCPP_WARN(this->get_logger(),
+                "Rejected goal: target_number must be even");
+    return false;
+  }
+
+  if (goal->period <= 0.0 || goal->period > 10.0) {
+    RCLCPP_WARN(this->get_logger(),
+                "Rejected goal: Period must be > 0 and <= 10 seconds");
+    return false;
+  }
+
+  return true;
+}
+
+bool AddUntilServer::is_policy_valid(const std::string &policy) const {
+  const auto it = std::find_if(valid_policies_.begin(), valid_policies_.end(),
+                               [policy](const std::string &valid_policy) {
+                                 return valid_policy == policy;
+                               });
+  return it != valid_policies_.end();
 }
