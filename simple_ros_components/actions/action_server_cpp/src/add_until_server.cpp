@@ -1,5 +1,6 @@
 #include "action_server_cpp/add_until_server.hpp"
 
+#include <algorithm>
 #include <functional>
 #include <thread>
 
@@ -36,10 +37,13 @@ AddUntilServer::handle_goal(const rclcpp_action::GoalUUID &uuid,
   if (!is_goal_valid(goal)) {
     return rclcpp_action::GoalResponse::REJECT;
   } else {
-    if (policy_ == "reject" && is_goal_in_progress_.load()) {
-      RCLCPP_WARN(this->get_logger(),
-                  "Goal rejected due to active goal in progress");
-      return rclcpp_action::GoalResponse::REJECT;
+    if (policy_ == "reject") {
+      bool expected = false;
+      if (!is_goal_in_progress_.compare_exchange_strong(expected, true)) {
+        RCLCPP_WARN(this->get_logger(),
+                    "Goal rejected due to active goal in progress");
+        return rclcpp_action::GoalResponse::REJECT;
+      }
     }
   }
 
@@ -68,7 +72,6 @@ void AddUntilServer::handle_accepted(
 void AddUntilServer::execute(
     const std::shared_ptr<rclcpp_action::ServerGoalHandle<AddUntil>>
         goal_handle) {
-  is_goal_in_progress_.store(true);
   RCLCPP_INFO(this->get_logger(), "Executing goal");
 
   const auto target_number = goal_handle->get_goal()->target_number;
@@ -87,7 +90,9 @@ void AddUntilServer::execute(
       result->sum = counter;
       goal_handle->canceled(result);
       RCLCPP_INFO(this->get_logger(), "Goal canceled");
-      is_goal_in_progress_.store(false);
+      if (policy_ == "reject") {
+        is_goal_in_progress_.store(false);
+      }
       return;
     }
 
@@ -114,6 +119,9 @@ void AddUntilServer::execute(
     result->sum = counter;
     goal_handle->succeed(result);
     RCLCPP_INFO(this->get_logger(), "Goal succeeded");
+  }
+
+  if (policy_ == "reject") {
     is_goal_in_progress_.store(false);
   }
 }

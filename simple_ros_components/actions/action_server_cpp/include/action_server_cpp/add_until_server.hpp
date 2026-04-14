@@ -25,10 +25,9 @@ private:
   rclcpp_action::Server<AddUntil>::SharedPtr add_until_server_;
   std::string policy_;
   std::atomic<bool> is_goal_in_progress_{false};
-  std::array<std::string, 3> valid_policies_{
+  std::array<std::string, 2> valid_policies_{
       "parallel",
       "reject",
-      "queue",
   };
 
   /**
