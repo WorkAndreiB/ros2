@@ -15,6 +15,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
     "msg/JointsTarget.msg"
     "msg/Orientation.msg"
     "msg/PositionTarget.msg"
+    "action/MoveRobotArm.action"
     DEPENDENCIES geometry_msgs
 )
 

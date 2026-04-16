@@ -8,32 +8,21 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(robot_arm_commander_cpp REQUIRED)
+find_package(rclcpp_action REQUIRED)
 find_package(robot_arm_interfaces REQUIRED)
 
-add_library(ArmControllerLib STATIC src/controller.cpp)
-target_include_directories(ArmControllerLib PUBLIC
+add_library(arm_controller STATIC
+    src/robot_arm_controller.cpp
+)
+
+target_include_directories(arm_controller PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
-ament_target_dependencies(ArmControllerLib 
-    rclcpp 
-    robot_arm_commander_cpp 
-    robot_arm_interfaces
-)
+ament_target_dependencies(arm_controller rclcpp rclcpp_action robot_arm_interfaces)
 
-add_executable(ArmControllerExec src/main.cpp)
-target_link_libraries(ArmControllerExec 
-    PRIVATE 
-    ArmControllerLib
-)
+add_executable(robot_arm_controller src/main.cpp)
 
-install(TARGETS ArmControllerExec
-  DESTINATION lib/${PROJECT_NAME}
-)
-
-install(DIRECTORY include/
-  DESTINATION include
-)
+target_link_libraries(robot_arm_controller arm_controller)
 
 ament_package()
