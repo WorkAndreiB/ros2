@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
     python3-venv \
     libpq-dev \
     python3-pip \
-    git \ 
+    git \
     terminator \
     clang-format \
     && apt-get clean
@@ -58,12 +58,9 @@ RUN python3 -m venv /opt/venv
 # Make sure the venv pip is up-to-date
 RUN /opt/venv/bin/pip install --upgrade pip
 
-# Add virtual environment to PATH
-ENV PATH="/opt/venv/bin:$PATH"
-
 # Copy and install Python dependencies
 COPY .devcontainer/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
 
 # Environment settings
 ENV PYTHONUNBUFFERED=1
