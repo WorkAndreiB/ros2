@@ -1,63 +1,82 @@
 #include "robot_arm_commander_cpp/commander.hpp"
 
-Commander::Commander(const rclcpp::Node::SharedPtr &node) : node_(node) {
+#include <iostream>
+
+Commander::Commander(const rclcpp::Node::SharedPtr& node) : node_(node)
+{
   arm_ = std::make_shared<MoveGroupInterface>(node_, "arm");
   gripper_ = std::make_shared<MoveGroupInterface>(node_, "gripper");
 
   setScalingFactor(arm_);
   setScalingFactor(gripper_);
+
+  if (node_)
+  {
+    std::cout << "Commander initialized successfully!" << std::endl;
+  }
 }
 
-void Commander::setScalingFactor(
-    std::shared_ptr<MoveGroupInterface> interface) {
+void Commander::setScalingFactor(std::shared_ptr<MoveGroupInterface> interface)
+{
   interface->setMaxAccelerationScalingFactor(0.5);
   interface->setMaxVelocityScalingFactor(0.5);
 }
 
-void Commander::planAndExecute(
-    const std::shared_ptr<MoveGroupInterface> &interface) {
-
+std::string Commander::planAndExecute(const std::shared_ptr<MoveGroupInterface>& interface)
+{
   moveit::planning_interface::MoveGroupInterface::Plan plan;
-  bool success =
-      (interface->plan(plan) == moveit::core::MoveItErrorCode::SUCCESS);
 
-  if (success) {
-    interface->execute(plan);
-  } else {
-    RCLCPP_ERROR(node_->get_logger(),
-                 "Motion planning failed in planAndExecute.");
+  auto robot_status = interface->plan(plan);
+
+  if (robot_status != moveit::core::MoveItErrorCode::SUCCESS)
+  {
+    RCLCPP_ERROR(node_->get_logger(), "Motion planning failed:");
+
+    return moveit::core::errorCodeToString(robot_status);
   }
+  RCLCPP_INFO(node_->get_logger(), "Motion planning completed with status: %s",
+              moveit::core::errorCodeToString(robot_status).c_str());
+
+  robot_status = interface->execute(plan);
+
+  if (robot_status != moveit::core::MoveItErrorCode::SUCCESS)
+  {
+    RCLCPP_ERROR(node_->get_logger(), "Motion execution failed:");
+  }
+
+  RCLCPP_INFO(node_->get_logger(), "Motion execution completed with status: %s",
+              moveit::core::errorCodeToString(robot_status).c_str());
+
+  return moveit::core::errorCodeToString(robot_status);
 }
 
-void Commander::moveToNamedTarget(
-    const std::string &target,
-    const std::shared_ptr<MoveGroupInterface> &interface) {
+std::string Commander::moveToNamedTarget(const std::string& target,
+                                         const std::shared_ptr<MoveGroupInterface>& interface)
+{
   interface->setStartStateToCurrentState();
   interface->setNamedTarget(target);
-  planAndExecute(interface);
+  return planAndExecute(interface);
 }
 
-void Commander::moveArmToNamedTarget(const std::string &target) {
-  moveToNamedTarget(target, arm_);
-}
+std::string Commander::moveArmToNamedTarget(const std::string& target) { return moveToNamedTarget(target, arm_); }
 
-void Commander::moveToJointTarget(
-    const std::vector<double> &joints,
-    const std::shared_ptr<MoveGroupInterface> &interface) {
+std::string Commander::moveToJointTarget(const std::vector<double>& joints,
+                                         const std::shared_ptr<MoveGroupInterface>& interface)
+{
   interface->setStartStateToCurrentState();
   interface->setJointValueTarget(joints);
-  planAndExecute(interface);
+  return planAndExecute(interface);
 }
 
-void Commander::moveArmToJointTarget(const std::vector<double> &joints) {
-  moveToJointTarget(joints, arm_);
+std::string Commander::moveArmToJointTarget(const std::vector<double>& joints)
+{
+  return moveToJointTarget(joints, arm_);
 }
 
-void Commander::moveArmToPositionTarget(const PositionTarget target,
-                                        bool cartesian_path) {
+std::string Commander::moveArmToPositionTarget(const PositionTarget target, bool cartesian_path)
+{
   tf2::Quaternion q;
-  q.setRPY(target.orientation.roll, target.orientation.pitch,
-           target.orientation.yaw);
+  q.setRPY(target.orientation.roll, target.orientation.pitch, target.orientation.yaw);
   q = q.normalize();
 
   geometry_msgs::msg::PoseStamped target_pose;
@@ -71,25 +90,36 @@ void Commander::moveArmToPositionTarget(const PositionTarget target,
   target_pose.pose.orientation.z = q.getZ();
   target_pose.pose.orientation.w = q.getW();
 
-  if (!cartesian_path) {
+  if (!cartesian_path)
+  {
     arm_->setStartStateToCurrentState();
     arm_->setPoseTarget(target_pose);
-    planAndExecute(arm_);
-  } else {
+    return planAndExecute(arm_);
+  }
+  else
+  {
     // cartesian path
     std::vector<geometry_msgs::msg::Pose> waypoints;
     waypoints.push_back(target_pose.pose);
 
     moveit_msgs::msg::RobotTrajectory trajectory;
     double fraction = arm_->computeCartesianPath(waypoints, 0.01, trajectory);
-    if (fraction == 1) {
+    if (fraction == 1)
+    {
       arm_->execute(trajectory);
-    } else {
+    }
+    else
+    {
       RCLCPP_ERROR(node_->get_logger(), "Cartesian path execution failed");
     }
   }
+
+  return moveit::core::errorCodeToString(moveit::core::MoveItErrorCode::FAILURE);
 }
 
-void Commander::openGripper() { moveToNamedTarget("open", gripper_); }
+std::string Commander::moveGripperToNamedTarget(const std::string& target)
+{
+  return moveToNamedTarget(target, gripper_);
+}
 
-void Commander::closeGripper() { moveToNamedTarget("closed", gripper_); }
+void Commander::stopArm() { arm_->stop(); }

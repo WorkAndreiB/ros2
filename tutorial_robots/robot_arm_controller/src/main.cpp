@@ -1,13 +1,16 @@
-#include "robot_arm_controller/robot_arm_controller.hpp"
 #include <memory>
 #include <rclcpp/rclcpp.hpp>
 
-int main(int argc, char **argv) {
+#include "robot_arm_controller/robot_arm_controller.hpp"
+
+int main(int argc, char **argv)
+{
   rclcpp::init(argc, argv);
 
-  auto node = std::make_shared<RobotArmController>();
+  auto arm_controller = std::make_shared<RobotArmController>();
+  arm_controller->init();
 
-  rclcpp::spin(node);
+  rclcpp::spin(arm_controller);
   rclcpp::shutdown();
 
   return 0;

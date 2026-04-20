@@ -22,6 +22,7 @@
     -(remove this when used)-params-file /workspaces/ros2/tutorial_robots/robot_arm_bringup/config/ros2_controllers.yaml -->
     <node pkg="controller_manager" exec="ros2_control_node">
         <param from="$(var controllers_path)"></param>
+        <param name="robot_description" value="$(command 'xacro $(var urdf_path)')"></param>
     </node>
 
     <!-- launch controller manager -->

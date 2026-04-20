@@ -93,6 +93,7 @@
         <child link="hand_link"></child>
         <origin xyz="0 0 ${wrist_link_height}" rpy="0 0 0"></origin>
         <axis xyz="0 0 1"></axis>
+        <limit effort="100.0" velocity="1.0"/>
     </joint>
 
     <!-- 7 -->

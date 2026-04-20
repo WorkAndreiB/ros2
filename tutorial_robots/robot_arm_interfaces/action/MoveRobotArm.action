@@ -3,7 +3,7 @@ string target
 string position
 ---
 # Result
-string result 
+string final_status
 ---
 # Feedback
 string feedback_status

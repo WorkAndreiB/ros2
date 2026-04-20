@@ -3,12 +3,12 @@
 
 #include <moveit/move_group_interface/move_group_interface.hpp>
 #include <rclcpp/rclcpp.hpp>
-
 #include <string>
 
 using MoveGroupInterface = moveit::planning_interface::MoveGroupInterface;
 
-struct Point3D {
+struct Point3D
+{
   double x{0.0};
   double y{0.0};
   double z{0.0};
@@ -32,40 +32,42 @@ struct Point3D {
   Notes:
   - Units: radians
 */
-struct Orientation {
+struct Orientation
+{
   double roll{0.0};
   double pitch{0.0};
   double yaw{0.0};
 };
 
-struct PositionTarget {
+struct PositionTarget
+{
   Point3D position{};
   Orientation orientation{};
 };
 
-class Commander {
-public:
+class Commander
+{
+ public:
   Commander(const rclcpp::Node::SharedPtr &node);
-  void moveArmToNamedTarget(const std::string &target);
-  void moveArmToJointTarget(const std::vector<double> &joints);
-  void moveArmToPositionTarget(const PositionTarget position,
-                               bool cartesian_path = false);
 
-  void openGripper();
-  void closeGripper();
+  std::string moveGripperToNamedTarget(const std::string &target);
+  std::string moveArmToNamedTarget(const std::string &target);
+  std::string moveArmToJointTarget(const std::vector<double> &joints);
+  std::string moveArmToPositionTarget(const PositionTarget position, bool cartesian_path = false);
 
-private:
-  void moveToNamedTarget(const std::string &target,
-                         const std::shared_ptr<MoveGroupInterface> &interface);
-  void moveToJointTarget(const std::vector<double> &joints,
-                         const std::shared_ptr<MoveGroupInterface> &interface);
+  void stopArm();
+
+ private:
+  std::string moveToNamedTarget(const std::string &target, const std::shared_ptr<MoveGroupInterface> &interface);
+  std::string moveToJointTarget(const std::vector<double> &joints,
+                                const std::shared_ptr<MoveGroupInterface> &interface);
 
   void setScalingFactor(std::shared_ptr<MoveGroupInterface> interface);
-  void planAndExecute(const std::shared_ptr<MoveGroupInterface> &interface);
+  std::string planAndExecute(const std::shared_ptr<MoveGroupInterface> &interface);
 
-  const rclcpp::Node::SharedPtr &node_;
+  rclcpp::Node::SharedPtr node_;
   std::shared_ptr<MoveGroupInterface> arm_;
   std::shared_ptr<MoveGroupInterface> gripper_;
 };
 
-#endif // ROBOT_ARM_COMMANDER_COMMANDER_HPP
+#endif  // ROBOT_ARM_COMMANDER_COMMANDER_HPP

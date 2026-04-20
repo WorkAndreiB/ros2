@@ -10,6 +10,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(robot_arm_interfaces REQUIRED)
+find_package(robot_arm_commander_cpp REQUIRED)
 
 add_library(arm_controller STATIC
     src/robot_arm_controller.cpp
@@ -19,10 +20,13 @@ target_include_directories(arm_controller PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
-ament_target_dependencies(arm_controller rclcpp rclcpp_action robot_arm_interfaces)
+ament_target_dependencies(arm_controller rclcpp rclcpp_action robot_arm_interfaces robot_arm_commander_cpp)
 
 add_executable(robot_arm_controller src/main.cpp)
 
 target_link_libraries(robot_arm_controller arm_controller)
+
+install(TARGETS robot_arm_controller
+  DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
