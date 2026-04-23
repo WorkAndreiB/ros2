@@ -1,7 +1,13 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+    <xacro:property name="default_density" value="500.0"></xacro:property>
+
     <xacro:macro name="box_link" params="name length width height origin_xyz material">
+        <xacro:property name="mass" value="${default_density * length * width * height}"></xacro:property>
+        <xacro:property name="ixx" value="${mass * (width*width + height*height) / 12.0}"></xacro:property>
+        <xacro:property name="iyy" value="${mass * (length*length + height*height) / 12.0}"></xacro:property>
+        <xacro:property name="izz" value="${mass * (length*length + width*width) / 12.0}"></xacro:property>
         <link name="${name}">
             <visual>
                 <geometry>
@@ -16,10 +22,19 @@
                 </geometry>
                 <origin xyz="${origin_xyz}" rpy="0 0 0"></origin>
             </collision>
+            <inertial>
+                <origin xyz="${origin_xyz}" rpy="0 0 0"></origin>
+                <mass value="${mass}"></mass>
+                <inertia ixx="${ixx}" ixy="0.0" ixz="0.0" iyy="${iyy}" iyz="0.0" izz="${izz}"></inertia>
+            </inertial>
         </link>
     </xacro:macro>
 
     <xacro:macro name="cylinder_link" params="name length radius origin_xyz material">
+        <xacro:property name="mass" value="${default_density * 3.14159265359 * radius * radius * length}"></xacro:property>
+        <xacro:property name="ixx" value="${mass * (3.0*radius*radius + length*length) / 12.0}"></xacro:property>
+        <xacro:property name="iyy" value="${mass * (3.0*radius*radius + length*length) / 12.0}"></xacro:property>
+        <xacro:property name="izz" value="${mass * radius * radius / 2.0}"></xacro:property>
         <link name="${name}">
             <visual>
                 <geometry>
@@ -35,6 +50,12 @@
                 </geometry>
                 <origin xyz="${origin_xyz}" rpy="0 0 0"></origin>
             </collision>
+            <inertial>
+                <origin xyz="${origin_xyz}" rpy="0 0 0"></origin>
+                <mass value="${mass}"></mass>
+                <inertia ixx="${ixx}" ixy="0.0" ixz="0.0" iyy="${iyy}" iyz="0.0" izz="${izz}"></inertia>
+            </inertial>
+            
         </link>
     </xacro:macro>
 

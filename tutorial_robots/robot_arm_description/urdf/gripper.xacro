@@ -30,7 +30,6 @@
         <child link="right_finger_link"></child>
         <origin xyz="${gripper_base_link_length/2.0} 0 ${gripper_base_link_height}" rpy="0 0 0"></origin>
         <axis xyz="1 0 0 "></axis>
-        <mimic joint="gripper_left_finger_joint" multiplier="-1.0"></mimic>
         <limit effort="100.0" velocity="1.0" lower="-${0.1 - finger_link_width/3.0}" upper="0.0"></limit>
     </joint>
 

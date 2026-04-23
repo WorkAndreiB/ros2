@@ -7,12 +7,4 @@ moveit_setup_assistant_config:
   package_settings:
     author_name: AndreiB
     author_email: andrei@gmail.com
-    generated_timestamp: 1767721775
-  control_xacro:
-    command:
-      - position
-    state:
-      - position
-  modified_urdf:
-    xacros:
-      - control_xacro
+    generated_timestamp: 1776708663
