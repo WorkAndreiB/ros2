@@ -4,7 +4,7 @@
     <xacro:property name="object_length" value="0.5"></xacro:property>
     <xacro:property name="object_width" value="0.1"></xacro:property>
     <xacro:property name="object_height" value="0.5"></xacro:property>
-    <xacro:property name="object_density" value="500.0"></xacro:property>
+    <xacro:property name="object_density" value="5.0"></xacro:property>
     <xacro:property name="object_mass" value="${object_density * object_length * object_width * object_height}"></xacro:property>
     <xacro:property name="object_ixx" value="${object_mass * (object_width*object_width + object_height*object_height) / 12.0}"></xacro:property>
     <xacro:property name="object_iyy" value="${object_mass * (object_length*object_length + object_height*object_height) / 12.0}"></xacro:property>
@@ -12,7 +12,7 @@
 
     <link name="object">
             <inertial>
-                <origin xyz="0 0 0" rpy="0 0 0"></origin>
+                <origin xyz="0 0 0" rpy="0 0 1.57"></origin>
                 <mass value="${object_mass}"></mass>
                 <inertia ixx="${object_ixx}" ixy="0.0" ixz="0.0" iyy="${object_iyy}" iyz="0.0" izz="${object_izz}"></inertia>
             </inertial>

@@ -10,6 +10,7 @@
     <xacro:include filename="object.xacro"></xacro:include>
 
     <xacro:include filename="robot_arm.ros2_control.xacro"></xacro:include>
+    <xacro:include filename="robot_arm_gazebo.xacro"></xacro:include>
 
     <!-- Fixed joint attaching the gripper base to the tool link -->
     <joint name="tool_gripper_joint" type="fixed">

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-    <xacro:property name="default_density" value="500.0"></xacro:property>
+    <xacro:property name="default_density" value="5.0"></xacro:property>
 
     <xacro:macro name="box_link" params="name length width height origin_xyz material">
         <xacro:property name="mass" value="${default_density * length * width * height}"></xacro:property>

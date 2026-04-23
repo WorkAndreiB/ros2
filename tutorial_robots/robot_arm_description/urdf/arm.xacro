@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+    <link name="world"></link>
     <link name="base_footprint"></link>
 
     <xacro:property name="base_link_length" value="0.5"></xacro:property>
@@ -51,12 +52,19 @@
 
     <!-- Joints -->
 
+    <!-- Anchor base to world so arm doesn't fall in Gazebo -->
+    <joint name="world_base_footprint_joint" type="fixed">
+        <parent link="world"></parent>
+        <child link="base_footprint"></child>
+        <origin xyz="0 0 0" rpy="0 0 0"></origin>
+    </joint>
+
     <!-- Virtual joint to connect the robot to the world frame -->
     <joint name="base_footprint_joint" type="fixed">
         <parent link="base_footprint"></parent>
         <child link="base_link"></child>
         <origin xyz="0 0 0" rpy="0 0 0"></origin>
-        <dynamics friction="0.5" damping="0.5"/>
+        <dynamics friction="2.0" damping="5.0"/>
     </joint>
 
     <!-- 1 -->
@@ -66,7 +74,7 @@
         <origin xyz="0 0 ${base_link_height}" rpy="0 0 0"></origin>
         <axis xyz="0 0 1"></axis>
         <limit effort="100.0" velocity="1.0" lower="-3.14" upper="3.14"></limit>
-        <dynamics friction="0.5" damping="0.5"/>
+        <dynamics friction="2.0" damping="5.0"/>
     </joint>
 
     <!-- 2 -->
@@ -76,7 +84,7 @@
         <origin xyz="0 0 ${shoulder_link_length}" rpy="0 0 0"></origin>
         <axis xyz="0 1 0"></axis>
         <limit effort="100.0" velocity="1.0" lower="0.0" upper="2.5"></limit>
-        <dynamics friction="0.5" damping="0.5"/>
+        <dynamics friction="2.0" damping="5.0"/>
     </joint>
 
     <!-- 3 -->
@@ -86,7 +94,7 @@
         <origin xyz="0 0 ${arm_link_length}" rpy="0 0 0"></origin>
         <axis xyz="0 1 0"></axis>
         <limit effort="100.0" velocity="1.0" lower="0.0" upper="2.5"></limit>
-        <dynamics friction="0.5" damping="0.5"/>
+        <dynamics friction="2.0" damping="5.0"/>
     </joint>
 
     <!-- 4 -->
@@ -96,7 +104,7 @@
         <origin xyz="0 0 ${elbow_link_length}" rpy="0 0 0"></origin>
         <axis xyz="0 0 1"></axis>
         <limit effort="100.0" velocity="1.0" lower="-3.14" upper="3.14"></limit>
-        <dynamics friction="0.5" damping="0.5"/>
+        <dynamics friction="2.0" damping="5.0"/>
 
     </joint>
 
@@ -107,7 +115,7 @@
         <origin xyz="0 0 ${forearm_link_length}" rpy="0 0 0"></origin>
         <axis xyz="0 1 0"></axis>
         <limit effort="100.0" velocity="1.0" lower="-1.57" upper="1.57"></limit>
-        <dynamics friction="0.5" damping="0.5"/>
+        <dynamics friction="2.0" damping="5.0"/>
     </joint>
 
     <!-- 6 -->

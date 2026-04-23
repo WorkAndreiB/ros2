@@ -1,0 +1,19 @@
+# Gazebo <-> ROS 2 topic bridge configuration for robot_arm
+# Keep model name in sync with robot spawn name in launch file: robot_arm
+
+- ros_topic_name: "/clock"
+  gz_topic_name: "/clock"
+  ros_type_name: "rosgraph_msgs/msg/Clock"
+  gz_type_name: "gz.msgs.Clock"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/joint_states"
+  gz_topic_name: "/world/empty/model/robot_arm/joint_state"
+  ros_type_name: "sensor_msgs/msg/JointState"
+  gz_type_name: "gz.msgs.Model"
+  direction: GZ_TO_ROS
+
+# /tf is intentionally NOT bridged from Gazebo.
+# robot_state_publisher already publishes the full TF tree from /joint_states.
+# Bridging /tf would give base_link two parents (world and base_footprint),
+# which TF2 rejects, breaking the arm_link → base_link transform chain.
